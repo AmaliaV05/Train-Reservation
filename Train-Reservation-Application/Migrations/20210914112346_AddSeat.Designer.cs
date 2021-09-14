@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Reservation_Application.Data;
 
 namespace Train_Reservation_Application.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210914112346_AddSeat")]
+    partial class AddSeat
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,7 +64,7 @@ namespace Train_Reservation_Application.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.ToTable("Seats");
+                    b.ToTable("Seat");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Train", b =>

@@ -19,5 +19,6 @@ namespace Train_Reservation_Application.Models
         public int NumberOfSeats { get; set; }
         public Type Type { get; set; }
         public Train Train { get; set; }
+        public List<Seat> Seats { get; set; }
     }
 }

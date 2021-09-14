@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Train_Reservation_Application.Data;
 using Train_Reservation_Application.ViewModels;
-using Z.EntityFramework.Plus;
 
 namespace Train_Reservation_Application.Controllers
 {
@@ -24,7 +23,7 @@ namespace Train_Reservation_Application.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("filterTrains/{date}")]
+        [HttpGet("filter-trains/{date}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<TrainViewModel>> FilterTrainsByDate(DateTime date)
         {
@@ -39,19 +38,31 @@ namespace Train_Reservation_Application.Controllers
             return trainListFiltered;
         }
 
-        [HttpGet("filterCars/{carType}")]
+        [HttpGet("filter-cars/{idTrain}/{carType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int id, Models.Type carType)
+        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, Models.Type carType)
         {
-            var trainWithCarsViewModel = _context.Trains
-                .Where(train => train.Id == id)
+            if (carType == 0)
+            {
+                var trainWithCarsViewModel = _context.Trains
+                .Where(train => train.Id == idTrain)
+                .Include(train => train.Cars)
+                .ThenInclude(car => car.Seats)
+                .AsSplitQuery()
+                .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
+                .ToList();
+                return trainWithCarsViewModel;
+            }
+
+            var carListFiltered = _context.Trains
+                .Where(train => train.Id == idTrain)
                 .Include(train => train.Cars.Where(car => car.Type == carType))
                 .ThenInclude(car => car.Seats)                
                 .AsSplitQuery()
                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
                 .ToList();
             
-            return trainWithCarsViewModel;
+            return carListFiltered;
         }
     }
 }

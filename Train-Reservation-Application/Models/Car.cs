@@ -7,9 +7,10 @@ namespace Train_Reservation_Application.Models
 {
     public enum Type
     {
-        FirstClass,
-        SecondClass,
-        Sleeping
+        All = 0,
+        FirstClass = 1,
+        SecondClass = 2,
+        Sleeping = 3
     }
 
     public class Car

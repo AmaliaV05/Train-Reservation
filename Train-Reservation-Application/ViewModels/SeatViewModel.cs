@@ -9,5 +9,6 @@ namespace Train_Reservation_Application.ViewModels
     {
         public int Id { get; set; }
         public int Number { get; set; }
+        public bool Available { get; set; }
     }
 }

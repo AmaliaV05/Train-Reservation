@@ -40,6 +40,7 @@ namespace Train_Reservation_Application.Controllers
 
         [HttpGet("filter-cars/{idTrain}/{carType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, Models.Type carType)
         {
             if (carType == 0)
@@ -51,18 +52,19 @@ namespace Train_Reservation_Application.Controllers
                 .AsSplitQuery()
                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
                 .ToList();
-                return trainWithCarsViewModel;
-            }
 
-            var carListFiltered = _context.Trains
-                .Where(train => train.Id == idTrain)
-                .Include(train => train.Cars.Where(car => car.Type == carType))
-                .ThenInclude(car => car.Seats)                
-                .AsSplitQuery()
-                .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-                .ToList();
+                return trainWithCarsViewModel;
+            } 
             
+            var carListFiltered = _context.Trains
+            .Where(train => train.Id == idTrain)
+            .Include(train => train.Cars.Where(car => car.Type == carType))
+            .ThenInclude(car => car.Seats)
+            .AsSplitQuery()
+            .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
+            .ToList();
+
             return carListFiltered;
-        }
+        }        
     }
 }

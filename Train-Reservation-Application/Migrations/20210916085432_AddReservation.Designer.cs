@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Reservation_Application.Data;
 
 namespace Train_Reservation_Application.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210916085432_AddReservation")]
+    partial class AddReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,27 +47,6 @@ namespace Train_Reservation_Application.Migrations
                     b.ToTable("Cars");
                 });
 
-            modelBuilder.Entity("Train_Reservation_Application.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SocialSecurityNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customer");
-                });
-
             modelBuilder.Entity("Train_Reservation_Application.Models.Reservation", b =>
                 {
                     b.Property<int>("Id")
@@ -76,15 +57,10 @@ namespace Train_Reservation_Application.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("TrainId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.HasIndex("TrainId");
 
@@ -143,15 +119,9 @@ namespace Train_Reservation_Application.Migrations
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Reservation", b =>
                 {
-                    b.HasOne("Train_Reservation_Application.Models.Customer", "Customer")
-                        .WithMany("Reservations")
-                        .HasForeignKey("CustomerId");
-
                     b.HasOne("Train_Reservation_Application.Models.Train", "Train")
                         .WithMany("Reservations")
                         .HasForeignKey("TrainId");
-
-                    b.Navigation("Customer");
 
                     b.Navigation("Train");
                 });
@@ -168,11 +138,6 @@ namespace Train_Reservation_Application.Migrations
             modelBuilder.Entity("Train_Reservation_Application.Models.Car", b =>
                 {
                     b.Navigation("Seats");
-                });
-
-            modelBuilder.Entity("Train_Reservation_Application.Models.Customer", b =>
-                {
-                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Train", b =>

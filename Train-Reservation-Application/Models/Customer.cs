@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace Train_Reservation_Application.Models
 {
-    public class Train
+    public class Customer
     {
         public int Id { get; set; }
+        public string SocialSecurityNumber { get; set; }
         public string Name { get; set; }
-        public DayOfWeek DayOfWeek { get; set; }
-        public List<Car> Cars { get; set; }
+        public string Email { get; set; }
         public List<Reservation> Reservations { get; set; }
     }
 }

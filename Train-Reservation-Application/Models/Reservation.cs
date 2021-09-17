@@ -9,7 +9,8 @@ namespace Train_Reservation_Application.Models
     {
         public int Id { get; set; }
         public string Code { get; set; }
-        public Train Train { get; set; }
+        public DateTime ReservationDate { get; set; }
+        public List<Seat> Seats { get; set; }
         public Customer Customer { get; set; }
     }
 }

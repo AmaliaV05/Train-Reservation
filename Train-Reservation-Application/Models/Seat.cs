@@ -11,5 +11,6 @@ namespace Train_Reservation_Application.Models
         public int Number { get; set; }
         public bool Available { get; set; }
         public Car Car { get; set; }
+        public Reservation Reservation { get; set; }
     }
 }

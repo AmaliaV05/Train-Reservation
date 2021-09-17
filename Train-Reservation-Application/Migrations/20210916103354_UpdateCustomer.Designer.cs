@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Reservation_Application.Data;
 
 namespace Train_Reservation_Application.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210916103354_UpdateCustomer")]
+    partial class UpdateCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -79,12 +81,14 @@ namespace Train_Reservation_Application.Migrations
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ReservationDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int?>("TrainId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("TrainId");
 
                     b.ToTable("Reservations");
                 });
@@ -105,14 +109,9 @@ namespace Train_Reservation_Application.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ReservationId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CarId");
-
-                    b.HasIndex("ReservationId");
 
                     b.ToTable("Seats");
                 });
@@ -150,7 +149,13 @@ namespace Train_Reservation_Application.Migrations
                         .WithMany("Reservations")
                         .HasForeignKey("CustomerId");
 
+                    b.HasOne("Train_Reservation_Application.Models.Train", "Train")
+                        .WithMany("Reservations")
+                        .HasForeignKey("TrainId");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("Train");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Seat", b =>
@@ -159,13 +164,7 @@ namespace Train_Reservation_Application.Migrations
                         .WithMany("Seats")
                         .HasForeignKey("CarId");
 
-                    b.HasOne("Train_Reservation_Application.Models.Reservation", "Reservation")
-                        .WithMany("Seats")
-                        .HasForeignKey("ReservationId");
-
                     b.Navigation("Car");
-
-                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Car", b =>
@@ -178,14 +177,11 @@ namespace Train_Reservation_Application.Migrations
                     b.Navigation("Reservations");
                 });
 
-            modelBuilder.Entity("Train_Reservation_Application.Models.Reservation", b =>
-                {
-                    b.Navigation("Seats");
-                });
-
             modelBuilder.Entity("Train_Reservation_Application.Models.Train", b =>
                 {
                     b.Navigation("Cars");
+
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

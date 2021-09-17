@@ -12,11 +12,17 @@ namespace Train_Reservation_Application
     {
         public MappingProfile()
         {
-            CreateMap<Train, TrainViewModel>();
             CreateMap<Train, TrainWithCarsViewModel>();
-            CreateMap<Car, CarViewModel>();
+            CreateMap<Train, TrainViewModel>();
             CreateMap<Car, CarWithSeatsViewModel>();
             CreateMap<Seat, SeatViewModel>();
+            CreateMap<Reservation, ReservedSeatsViewModel>();
+            CreateMap<Customer, NewReservationRequestViewModel>();
+
+            CreateMap<Customer, OldCustomerReservationViewModel>();
+            CreateMap<Reservation, ReservationWithSeatsViewModel>();
+            CreateMap<Seat, SeatsInCarViewModel>();
+            CreateMap<Car, CarInTrainViewModel>();
         }
     }
 }

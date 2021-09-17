@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace Train_Reservation_Application.ViewModels
 {
-    public class TrainWithCarsViewModel
+    public class ReservedSeatsViewModel
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public DayOfWeek DayOfWeek { get; set; }
-        public List<CarWithSeatsViewModel> Cars { get; set; }
+        public DateTime ReservationDate { get; set; }
+        public List<int> ReservedSeatsIds { get; set; }
     }
 }

@@ -11,6 +11,5 @@ namespace Train_Reservation_Application.Models
         public string Name { get; set; }
         public DayOfWeek DayOfWeek { get; set; }
         public List<Car> Cars { get; set; }
-        public List<Reservation> Reservations { get; set; }
     }
 }

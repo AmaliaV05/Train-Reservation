@@ -29,19 +29,19 @@ namespace Train_Reservation_Application.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PutReservation(int idReservation, string Code, List<SeatsInCarViewModel> newReservedSeats)
+        public async Task<IActionResult> PutReservation(int idReservation, ModifyReservationViewModel modifyReservedSeats)
         {
-            var reservedSeats = _context.Reservations
+            var oldReservedSeats = _context.Reservations
                 .Where(reservation => reservation.Id == idReservation)
                 .Include(reservation => reservation.Seats)
                 .FirstOrDefault();
 
-            if (reservedSeats.Code != Code)
+            if (oldReservedSeats.Code != modifyReservedSeats.Code)
             {
                 return BadRequest("Incorrect code");
             }
 
-            if (newReservedSeats.Count == 0)
+            if (modifyReservedSeats.ReservedSeatsIds.Count == 0)
             {
                 return BadRequest("No seat is selected");
             }
@@ -60,13 +60,15 @@ namespace Train_Reservation_Application.Controllers
                 }
             }
 
-            var newSeats = _mapper.Map<List<Seat>>(newReservedSeats);
-
-            foreach(Seat seat in newSeats)
+            modifyReservedSeats.ReservedSeatsIds.ForEach(sid =>
             {
-                seat.Available = false;
-                _context.Entry(seat).State = EntityState.Modified;
-            }
+                var seatWithId = _context.Seats.Find(sid);
+                if (seatWithId != null && seatWithId.Available == true)
+                {
+                    seatWithId.Available = false;
+                    _context.Entry(seatWithId).State = EntityState.Modified;
+                }
+            });
 
             try
             {

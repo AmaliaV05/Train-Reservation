@@ -71,7 +71,7 @@ namespace Train_Reservation_Application.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<IEnumerable<int>> SeatsList(int idTrain, int N)
-        { 
+        {
             List<int> occupiedSeatsList = new();
 
             var train = _context.Trains

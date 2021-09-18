@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Train } from '../train-reservation.model';
+import { Train } from '../train.model';
 import { TrainsService } from '../trains.service';
 
 @Component({

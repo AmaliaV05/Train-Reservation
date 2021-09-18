@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Car, Seat, Train, TrainWithCarsWithSeats, TYPE } from '../train-reservation.model';
+import { Car, CarsWithSeats, Seat, Train, TrainWithCarsWithSeats, TYPE } from '../train.model';
 import { TrainsService } from '../trains.service';
 import { ActivatedRoute } from '@angular/router';
 
@@ -12,7 +12,10 @@ export class CarListComponent implements OnInit {
   filteredCars: TrainWithCarsWithSeats[];
   TYPES = TYPE;
   idTrain: number;
-  carType = 'FirstClass';
+  carType = 'All';
+  reserveSeats = new Array<Seat>();
+  filteredCarsByN: TrainWithCarsWithSeats[];
+  N = 1;
 
   constructor(private trainService: TrainsService,
     private route: ActivatedRoute) { }
@@ -26,5 +29,17 @@ export class CarListComponent implements OnInit {
     this.trainService.get(`Trains/${this.idTrain}/filter-cars/${this.carType}`)
       .subscribe((response: TrainWithCarsWithSeats[]) =>
       this.filteredCars = response);
+  }
+
+  getGroupSeats() {
+    this.trainService.get(`Trains/${this.idTrain}/filter-cars-by-available-seats/${this.N}`)
+      .subscribe((response: TrainWithCarsWithSeats[]) => {
+        this.filteredCarsByN = response;
+        console.log(response);}
+        );
+  }
+
+  addSeat(seat: Seat) {
+    this.reserveSeats.push(seat);
   }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Train_Reservation_Application.Models
 {
-    public enum Type
+    public enum CarType
     {
         All = 0,
         FirstClass = 1,
@@ -18,7 +18,7 @@ namespace Train_Reservation_Application.Models
         public int Id { get; set; }
         public int CarNumber { get; set; }
         public int NumberOfSeats { get; set; }
-        public Type Type { get; set; }
+        public CarType Type { get; set; }
         public Train Train { get; set; }
         public List<Seat> Seats { get; set; }
     }

@@ -41,7 +41,7 @@ namespace Train_Reservation_Application.Controllers
 
         [HttpGet("{idTrain}/filter-cars/{carType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, Models.Type carType)
+        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, CarType carType)
         {
             if (carType == 0)
             {
@@ -93,8 +93,7 @@ namespace Train_Reservation_Application.Controllers
 
             if (numberOfSeats.Max() < N)
             {
-                string number = (numberOfSeats.Max()).ToString();
-                return BadRequest("Choose a number lower than " + number);
+                return BadRequest($"N is bigger than {numberOfSeats.Max()}, the maximum number of seats in a car");
             }
 
             foreach (Train checkTrain in train)

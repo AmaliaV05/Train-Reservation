@@ -1,0 +1,28 @@
+<div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Choose car type
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" *ngFor="let option of TYPES"
+                     [value]="option">{{ option }}</a>
+  </div>
+</div>
+
+{{carType}}
+
+<p *ngIf="!filteredCars">NOOOOO</p>
+
+<div class="container" *ngIf="filteredCars">
+  <div class="d-flex justify-content-around" *ngFor="let train of filteredCars">
+    <div class="p-2">{{ train.name }}
+      <div class="p-2" *ngFor="let car of train.cars">
+        <div class="p-2">
+          {{ car.carNumber }}
+          <div class="p-2" *ngFor="seat of car.seats">
+            {{seat.number}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

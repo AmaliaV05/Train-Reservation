@@ -1,0 +1,17 @@
+<div class="col-md-4 mb-3">
+  <label for="date-filter">Choose a date</label><br />
+  <input [(ngModel)]="filterDate" name=filterdate #i type="date" id="date-filter">
+</div>
+<button class="btn btn-primary" (click)="getFilteredTrains(i.value)">Search trains</button>
+
+  <p *ngIf="!trains"><em>Loading...</em></p>
+
+  <div class="container" *ngIf="trains">
+    <div class="train" *ngFor="let train of trains">
+      <div class="card">
+        <div class="card-body" style="cursor: pointer;" routerLink="/train/{{ train.id }}/available-seats">
+          {{ train.name }}
+        </div>
+      </div>
+    </div>
+  </div>

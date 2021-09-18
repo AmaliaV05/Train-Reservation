@@ -67,37 +67,12 @@ namespace Train_Reservation_Application.Controllers
             return carListFiltered;
         }
 
-        [HttpGet("{idTrain}/filter-cars-by-available-seats/{numberOfSeats}")]
+        [HttpGet("{idTrain}/filter-cars-by-available-seats/{N}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByNumberOfNeighbouringSeatsAvailable(int idTrain, int numberOfSeats)
-        {
-            var query = _context.Trains
-            .Where(train => train.Id == idTrain)
-            .Include(train => train.Cars)
-            .ThenInclude(car => car.Seats
-                        .SkipWhile(s => s.Available == false)
-                        .TakeWhile(s => s.Available == false)
-                        .Count());
-            
-            if (query.Count() >= numberOfSeats)
-            {
-                return _context.Trains
-                .Where(train => train.Id == idTrain)
-                .Include(train => train.Cars)
-                .ThenInclude(car => car.Seats)
-                .AsSplitQuery()
-                .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-                .ToList();
-            }
-
-            return Ok();
-        }
-
-        [HttpGet("check")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<IEnumerable<int>> SeatsList(int idTrain, int N)
         { 
-            List<int> SeatsList = new();
+            List<int> occupiedSeatsList = new();
 
             var train = _context.Trains
                 .Where(train => train.Id == idTrain)
@@ -106,49 +81,62 @@ namespace Train_Reservation_Application.Controllers
                 .AsSplitQuery()
                 .ToList();
 
+            List<int>numberOfSeats = new();
+
+            foreach (Train checkTrain in train)
+            {
+                foreach (Car checkCar in checkTrain.Cars)
+                {
+                    numberOfSeats.Add(checkCar.NumberOfSeats);                   
+                }
+            }
+
+            if (numberOfSeats.Max() < N)
+            {
+                string number = (numberOfSeats.Max()).ToString();
+                return BadRequest("Choose a number lower than " + number);
+            }
+
             foreach (Train checkTrain in train)
             {
                 foreach (Car checkCar in checkTrain.Cars)
                 {
                     foreach (Seat checkSeat in checkCar.Seats)
                     {
-                        if ((checkSeat.Number == 1 && checkSeat.Available == true) ||
-                            (checkSeat.Number == checkCar.NumberOfSeats && checkSeat.Available == true) ||
-                            (checkSeat.Available == false))
+                        if(checkSeat.Number == 1)
                         {
-                            SeatsList.Add(checkSeat.Number);
-                            SeatsList.Add(checkCar.CarNumber);
+                            occupiedSeatsList.Add(0);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
+                        }
+                        if (checkSeat.Available == false)
+                        {
+                            occupiedSeatsList.Add(checkSeat.Number);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
+                        }
+                        if (checkSeat.Number == checkCar.NumberOfSeats)
+                        {
+                            occupiedSeatsList.Add(checkCar.NumberOfSeats + 1);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
                         }
                     }
                 }
             }
 
-            List<int> AvailableSeatsList = new();
+            List<int> availableSeatsList = new();
 
-            for (int i = 0; i < SeatsList.Count-2; i+=2)
+            for (int i = 0; i < occupiedSeatsList.Count-2; i+=2)
             {
-                if (SeatsList[i + 2] - SeatsList[i] - 1 >= N && SeatsList[i+1] == SeatsList[i + 3])   //din acelasi vagon
+                if (occupiedSeatsList[i + 2] - occupiedSeatsList[i] - 1 >= N && occupiedSeatsList[i+1] == occupiedSeatsList[i + 3])   //din acelasi vagon
                 {
-                    for (int t = SeatsList[i] + 1; t < SeatsList[i + 2]; t++)
+                    for (int t = occupiedSeatsList[i] + 1; t < occupiedSeatsList[i + 2]; t++)
                     {
-                        AvailableSeatsList.Add(t);
-                        AvailableSeatsList.Add(SeatsList[i + 1]);
+                        availableSeatsList.Add(t);
+                        availableSeatsList.Add(occupiedSeatsList[i + 1]);
                     }
-                    /*AvailableSeatsList.Add(SeatsList[i]);
-                    AvailableSeatsList.Add(SeatsList[i + 1]);
-                    AvailableSeatsList.Add(SeatsList[i + 2]);
-                    AvailableSeatsList.Add(SeatsList[i + 3]);*/
-                    AvailableSeatsList.Add(1000);
                 }
-            }
+            }            
 
-            foreach (int a in AvailableSeatsList)
-            {
-                Console.WriteLine(a);
-                Console.WriteLine(" ");
-            }
-
-            return AvailableSeatsList;
+            return availableSeatsList;
         }        
     }
 }

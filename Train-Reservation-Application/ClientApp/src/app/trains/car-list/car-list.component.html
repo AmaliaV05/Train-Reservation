@@ -1,36 +1,28 @@
-<div class="dropdown">
-  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    Choose car type
-  </button>
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-    <a class="dropdown-item" *ngFor="let option of TYPES"
-       [value]="option">{{ option }}</a>
-  </div>
-</div>
-
-{{carType}}
-
-<p *ngIf="!filteredCars">NOOOOO</p>
-
-<div class="container">
-  <div class="p-2">
-    mama
-    <div class="d-flex flex-row">
-      <div class="p-2">Flex item 1</div>
-      <div class="p-2">Flex item 2</div>
-      <div class="p-2">Flex item 3</div>
-    </div>
-  </div>
-</div>
-
-
-
 <div class="row">
   <div class="col-6">
     <div class="form-group row">
-      <label class="col-sm-5 col-form-label">Number of seats:</label>
       <div class="col-sm-7">
-        <input type="number" id="numberOfSeats" [(ngModel)]="N" (keyup)="getGroupSeats()" />
+        <mat-form-field appearance="fill">
+          <mat-label>Car Type</mat-label>
+          <mat-select>
+            <mat-option *ngFor="let option of TYPES" [value]="option">
+              {{ option }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="col-sm-2">
+        <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
+                [disabled]="removeButtonDisabled" (click)="decrementSeatNumber()">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+      <p class="col-sm-1 text-center pt-2">{{ N }}</p>
+      <div class="col-sm-2">
+        <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
+                [disabled]="addButtonDisabled" (click)="incrementSeatNumber()">
+          <mat-icon>add</mat-icon>
+        </button>
       </div>
     </div>
     <div class="container border" *ngIf="N !== null && N > 1; else elseTemplate">
@@ -38,7 +30,7 @@
         <div class="p-2 border" *ngFor="let train of filteredCarsByN">
           {{ train.name }}
           <div class="p-2 border" *ngFor="let car of train.cars">
-            {{ car.carNumber }}<br />
+            Car No. {{ car.carNumber }} <br />
             <div class="d-inline" *ngFor="let seat of car.seats">
               <div class="d-inline border" style="cursor: pointer;"
                    [seat]="seat" [style.background-color]="seat.available ? 'blue': 'red'"
@@ -55,13 +47,14 @@
         <div class="p-2 border" *ngFor="let train of filteredCars">
           {{ train.name }}
           <div class="p-2 border" *ngFor="let car of train.cars">
-            {{ car.carNumber }}<br />
+            Car No. {{ car.carNumber }}<br />
             <div class="d-inline" *ngFor="let seat of car.seats">
-              <div class="d-inline border" style="cursor: pointer;"
-                   [seat]="seat" [style.background-color]="seat.available ? 'green': 'red'"
-                   (click)="addSeat(seat)">
+              <button class="border" mat-raised-button
+                   [seat]="seat" [style.background-color]="seat.available ? '#00E828': 'red'"
+                   (click)="addSeat(seat)"
+                   [disabled]="!seat.available">
                 {{ seat.number }}
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -76,6 +69,8 @@
         Seat No. {{ seat.number }}
       </div>
     </div>
-    <button class="btn btn-primary">Reserve now</button>
+    <div class="container">
+      <button class="btn btn-primary" [disabled]="reserveButton" (click)="goToFinishReservation()">Reserve now</button>
+    </div>    
   </div>
 </div>

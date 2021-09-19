@@ -9,10 +9,10 @@ var Train = /** @class */ (function () {
 exports.Train = Train;
 var Type;
 (function (Type) {
-    Type[Type["All"] = 0] = "All";
-    Type[Type["FirstClass"] = 1] = "FirstClass";
-    Type[Type["SecondClass"] = 2] = "SecondClass";
-    Type[Type["Sleeping"] = 3] = "Sleeping";
+    Type["All"] = "All";
+    Type["FirstClass"] = "First Class";
+    Type["SecondClass"] = "Second Class";
+    Type["Sleeping"] = "Slepping";
 })(Type = exports.Type || (exports.Type = {}));
 exports.TYPE = ['All', 'First Class', 'Second Class', 'Sleeping'];
 var Car = /** @class */ (function () {
@@ -27,4 +27,4 @@ var Seat = /** @class */ (function () {
     return Seat;
 }());
 exports.Seat = Seat;
-//# sourceMappingURL=train-reservation.model.js.map
+//# sourceMappingURL=train.model.js.map

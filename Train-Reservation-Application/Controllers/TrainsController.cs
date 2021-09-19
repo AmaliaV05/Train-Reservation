@@ -81,21 +81,6 @@ namespace Train_Reservation_Application.Controllers
                 .AsSplitQuery()
                 .ToList();
 
-            List<int>numberOfSeats = new();
-
-            foreach (Train checkTrain in train)
-            {
-                foreach (Car checkCar in checkTrain.Cars)
-                {
-                    numberOfSeats.Add(checkCar.NumberOfSeats);                   
-                }
-            }
-
-            if (numberOfSeats.Max() < N)
-            {
-                return BadRequest($"N is bigger than {numberOfSeats.Max()}, the maximum number of seats in a car");
-            }
-
             foreach (Train checkTrain in train)
             {
                 foreach (Car checkCar in checkTrain.Cars)

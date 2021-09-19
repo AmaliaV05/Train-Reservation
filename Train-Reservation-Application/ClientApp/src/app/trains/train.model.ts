@@ -6,10 +6,10 @@ export class Train {
 }
 
 export enum Type {
-  All = 0,
-  FirstClass = 1,
-  SecondClass = 2,
-  Sleeping = 3
+  All = "All",
+  FirstClass = "First Class",
+  SecondClass = "Second Class",
+  Sleeping = "Slepping"
 }
 
 export const TYPE = ['All', 'First Class', 'Second Class', 'Sleeping'];

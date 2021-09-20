@@ -6,7 +6,8 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-reservation-finish',
-  templateUrl: './reservation-finish.component.html'
+  templateUrl: './reservation-finish.component.html',
+  styleUrls: ['./reservation-finish.component.css'],
 })
 export class ReservationFinishComponent implements OnInit, OnDestroy {
 

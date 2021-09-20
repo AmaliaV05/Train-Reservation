@@ -1,24 +1,25 @@
-<mat-form-field appearance="fill">
-  <mat-label>Social Security Number</mat-label>
-  <input matInput>
-</mat-form-field>
-<br />
-<mat-form-field appearance="fill">
-  <mat-label>Name, First name</mat-label>
-  <input matInput>
-</mat-form-field>
-<br />
-<mat-form-field appearance="fill">
-  <mat-label>Email</mat-label>
-  <input matInput>
-</mat-form-field>
-<br />
-<mat-form-field appearance="fill">
-  <mat-label>Date</mat-label>
-  <input matInput>
-</mat-form-field>
-<br />
-<button class="btn btn-primary" (click)="postReservation()">Finish reservation</button>
-{{ reservationDate }}
+<form class="example-form">
+  <mat-form-field appearance="fill">
+    <mat-label>Social Security Number</mat-label>
+    <input matInput>
+  </mat-form-field>
+  <br />
+  <mat-form-field appearance="fill">
+    <mat-label>Name, First name</mat-label>
+    <input matInput>
+  </mat-form-field>
+  <br />
+  <input-error-state-matcher-email></input-error-state-matcher-email>
+  <br />
+  <mat-form-field appearance="fill">
+    <mat-label>Date</mat-label>
+    <input matInput>
+  </mat-form-field>
+  <br />
+</form>
+  
+  
+  <button class="btn btn-primary" (click)="postReservation()">Finish reservation</button>
+  {{ reservationDate }}
 
-<mat-label *ngIf="code">To modify your reservation you will need the following code: {{ code }}</mat-label>
+  <mat-label *ngIf="code">To modify your reservation you will need the following code: {{ code }}</mat-label>

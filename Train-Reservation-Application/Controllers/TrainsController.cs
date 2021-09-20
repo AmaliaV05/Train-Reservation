@@ -67,6 +67,21 @@ namespace Train_Reservation_Application.Controllers
             return carListFiltered;
         }
 
+        [HttpGet("{idTrain}/{date}/filter-cars/{carType}/COPY")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType2(int idTrain, DateTime date, CarType carType)
+        {
+            var trainWithCarsViewModel = _context.Trains
+             .Where(train => train.Id == idTrain)
+             .Include(train => train.Cars)
+             .ThenInclude(car => car.Seats.Where(seat => seat.Reservation.ReservationDate.Date ==))
+             .AsSplitQuery()
+             .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
+             .ToList();
+
+            return trainWithCarsViewModel;
+        }
+
         [HttpGet("{idTrain}/filter-cars-by-available-seats/{N}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -118,9 +133,81 @@ namespace Train_Reservation_Application.Controllers
                         availableSeatsList.Add(occupiedSeatsList[i + 1]);
                     }
                 }
-            }            
+            }
 
-            return availableSeatsList;
-        }        
+            return availableSeatsList;            
+        }
+
+        [HttpGet("{idTrain}/filter-cars-by-available-COPY/{N}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<IEnumerable<int>> SeatsListID(int idTrain, int N)
+        {
+            List<int> occupiedSeatsList = new();
+
+            var train = _context.Trains
+                .Where(train => train.Id == idTrain)
+                .Include(train => train.Cars)
+                .ThenInclude(car => car.Seats)
+                .AsSplitQuery()
+                .ToList();
+
+            foreach (Train checkTrain in train)
+            {
+                foreach (Car checkCar in checkTrain.Cars)
+                {
+                    foreach (Seat checkSeat in checkCar.Seats)
+                    {
+                        if (checkSeat.Number == 1)
+                        {
+                            occupiedSeatsList.Add(0);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
+                            occupiedSeatsList.Add(checkSeat.Id - 1);
+                        }
+                        if (checkSeat.Available == false)
+                        {
+                            occupiedSeatsList.Add(checkSeat.Number);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
+                            occupiedSeatsList.Add(checkSeat.Id);
+                        }
+                        if (checkSeat.Number == checkCar.NumberOfSeats)
+                        {
+                            occupiedSeatsList.Add(checkCar.NumberOfSeats + 1);
+                            occupiedSeatsList.Add(checkCar.CarNumber);
+                            occupiedSeatsList.Add(checkSeat.Id + 1);
+                        }
+                    }
+                }
+            }
+
+            List<int> availableSeatsListIds = new();
+            List<int> availableSeatsInCarsList = new();
+
+            for (int i = 0; i <= occupiedSeatsList.Count - 6; i += 3)
+            {
+                if (occupiedSeatsList[i + 3] - occupiedSeatsList[i] - 1 >= N && occupiedSeatsList[i + 1] == occupiedSeatsList[i + 4])   //din acelasi vagon
+                {
+                    for (int t = occupiedSeatsList[i + 2] + 1; t < occupiedSeatsList[i + 5]; t++)
+                    {
+                        availableSeatsListIds.Add(t);
+                    }
+                    for (int t = occupiedSeatsList[i] + 1; t < occupiedSeatsList[i + 3]; t++)
+                    {
+                        availableSeatsInCarsList.Add(t);
+                        availableSeatsInCarsList.Add(occupiedSeatsList[i] + 1);
+                    }
+                }
+            }
+
+            var result = string.Join(",", availableSeatsListIds.ToArray());
+
+            Console.WriteLine(result);
+
+            var result2 = string.Join(",", availableSeatsInCarsList.ToArray());
+
+            Console.WriteLine(result2);
+
+            return availableSeatsListIds;
+        }
     }
 }

@@ -1,17 +1,35 @@
-<div class="col-md-4 mb-3">
-  <label for="date-filter">Choose a date</label><br />
-  <input [(ngModel)]="filterDate" name=filterdate #i type="date" id="date-filter">
-</div>
-<button class="btn btn-primary" (click)="getFilteredTrains(i.value)">Search trains</button>
-
-  <p *ngIf="!trains"><em>Loading...</em></p>
-
-  <div class="container" *ngIf="trains">
-    <div class="train" *ngFor="let train of trains">
-      <div class="card">
-        <div class="card-body" style="cursor: pointer;" routerLink="/train/{{ train.id }}/available-seats">
-          {{ train.name }}
-        </div>
+<div class="container pt-4">
+  <div class="row">
+    <div class="col-5">
+      <mat-form-field appearance="fill">
+        <mat-label>Choose a date</mat-label>
+        <input matInput [matDatepicker]="picker">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="col-2">
+      <button mat-raised-button color="primary" (click)="getFilteredTrains(i.value)">Search for trains</button>
+    </div>
+  </div>
+  <div class="row pt-4">
+    <div class="container col-5" *ngIf="trains">
+      <div class="train" *ngFor="let train of trains">
+        <mat-card>
+          <mat-card-content style="cursor: pointer; font-size: larger;" routerLink="/train/{{ train.id }}/available-seats">
+            <mat-icon style="vertical-align: middle;"> train</mat-icon> {{ train.name }}
+          </mat-card-content>
+        </mat-card><br />
       </div>
     </div>
   </div>
+</div>
+
+
+
+    <div class="col-md-4 mb-3">
+      <label for="date-filter">Choose a date</label><br />
+      <input [(ngModel)]="filterDate" name=filterdate #i type="date" id="date-filter">
+    </div>
+
+    <p *ngIf="!trains"><em>Loading...</em></p>

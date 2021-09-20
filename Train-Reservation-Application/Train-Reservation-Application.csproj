@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\app\home\data.service.ts" />
+    <None Remove="ClientApp\src\app\reservations\reservation-finish\email\email-validation.component.ts" />
     <None Remove="ClientApp\src\app\reservations\reservation-finish\reservation-finish.component.ts" />
     <None Remove="ClientApp\src\app\reservations\reservations.model.ts" />
     <None Remove="ClientApp\src\app\train-reservation.model.ts" />

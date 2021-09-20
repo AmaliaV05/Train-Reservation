@@ -1,7 +1,7 @@
 <div class="row">
-  <div class="col-6">
+  <div class="col-7">
     <div class="form-group row">
-      <div class="col-sm-7">
+      <div class="col-sm-6">
         <mat-form-field appearance="fill">
           <mat-label>Car Type</mat-label>
           <mat-select>
@@ -11,13 +11,18 @@
           </mat-select>
         </mat-form-field>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-1">
         <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
                 [disabled]="removeButtonDisabled" (click)="decrementSeatNumber()">
           <mat-icon>remove</mat-icon>
         </button>
       </div>
-      <p class="col-sm-1 text-center pt-2">{{ N }}</p>
+      <div class="col-1">
+        <mat-icon style="vertical-align: middle;">person_outline</mat-icon>
+      </div>
+      <div class="col-1">
+        <p class="text-center pt-2">{{ N }}</p>
+      </div>      
       <div class="col-sm-2">
         <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
                 [disabled]="addButtonDisabled" (click)="incrementSeatNumber()">
@@ -27,7 +32,7 @@
     </div>
     <div class="container border" *ngIf="N !== null && N > 1; else elseTemplate">
       <div class="container border" *ngIf="filteredCarsByN">
-        <div class="p-2 border" *ngFor="let train of filteredCarsByN">
+        <div class="p-2" *ngFor="let train of filteredCarsByN">
           {{ train.name }}
           <div class="p-2 border" *ngFor="let car of train.cars">
             Car No. {{ car.carNumber }} <br />
@@ -43,7 +48,7 @@
       </div>
     </div>
     <ng-template #elseTemplate>
-      <div class="container border" *ngIf="filteredCars">
+      <div class="container" style="height: 50%; overflow: auto;" *ngIf="filteredCars">
         <div class="p-2 border" *ngFor="let train of filteredCars">
           {{ train.name }}
           <div class="p-2 border" *ngFor="let car of train.cars">

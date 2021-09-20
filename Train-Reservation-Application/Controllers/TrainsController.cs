@@ -24,19 +24,13 @@ namespace Train_Reservation_Application.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("filter-trains/{date}")]
+        [HttpGet("filter-trains/{selectedDate}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainViewModel>> FilterTrainsByDate(DateTime date)
+        public ActionResult<IEnumerable<TrainViewModel>> FilterTrainsByDate(DateTime selectedDate)
         {
-            var trainViewModelList = _context.Trains
+            return _context.Trains.Where(train => train.DayOfWeek == selectedDate.DayOfWeek)
                 .Select(train => _mapper.Map<TrainViewModel>(train))
                 .ToList();
-
-            var trainListFiltered = trainViewModelList
-                .Where(train => train.DayOfWeek == date.DayOfWeek)
-                .ToList();
-
-            return trainListFiltered;
         }
 
         [HttpGet("{idTrain}/filter-cars/{carType}")]
@@ -74,7 +68,7 @@ namespace Train_Reservation_Application.Controllers
             var trainWithCarsViewModel = _context.Trains
              .Where(train => train.Id == idTrain)
              .Include(train => train.Cars)
-             .ThenInclude(car => car.Seats.Where(seat => seat.Reservation.ReservationDate.Date ==))
+             .ThenInclude(car => car.Seats)
              .AsSplitQuery()
              .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
              .ToList();
@@ -107,11 +101,11 @@ namespace Train_Reservation_Application.Controllers
                             occupiedSeatsList.Add(0);
                             occupiedSeatsList.Add(checkCar.CarNumber);
                         }
-                        if (checkSeat.Available == false)
+                        /*if (checkSeat.Available == false)
                         {
                             occupiedSeatsList.Add(checkSeat.Number);
                             occupiedSeatsList.Add(checkCar.CarNumber);
-                        }
+                        }*/
                         if (checkSeat.Number == checkCar.NumberOfSeats)
                         {
                             occupiedSeatsList.Add(checkCar.NumberOfSeats + 1);
@@ -164,12 +158,12 @@ namespace Train_Reservation_Application.Controllers
                             occupiedSeatsList.Add(checkCar.CarNumber);
                             occupiedSeatsList.Add(checkSeat.Id - 1);
                         }
-                        if (checkSeat.Available == false)
+                        /*if (checkSeat.Available == false)
                         {
                             occupiedSeatsList.Add(checkSeat.Number);
                             occupiedSeatsList.Add(checkCar.CarNumber);
                             occupiedSeatsList.Add(checkSeat.Id);
-                        }
+                        }*/
                         if (checkSeat.Number == checkCar.NumberOfSeats)
                         {
                             occupiedSeatsList.Add(checkCar.NumberOfSeats + 1);

@@ -3,36 +3,23 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Reservation_Application.Data;
 
 namespace Train_Reservation_Application.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210920101245_UpdateReservationSeatRelationship")]
+    partial class UpdateReservationSeatRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("CalendarSeat", b =>
-                {
-                    b.Property<int>("CalendarsId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SeatsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CalendarsId", "SeatsId");
-
-                    b.HasIndex("SeatsId");
-
-                    b.ToTable("CalendarSeat");
-                });
 
             modelBuilder.Entity("ReservationSeat", b =>
                 {
@@ -47,24 +34,6 @@ namespace Train_Reservation_Application.Migrations
                     b.HasIndex("SeatsId");
 
                     b.ToTable("ReservationSeat");
-                });
-
-            modelBuilder.Entity("Train_Reservation_Application.Models.Calendar", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<bool>("AvailableSeat")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("CalendarDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Calendars");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Car", b =>
@@ -144,6 +113,9 @@ namespace Train_Reservation_Application.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("Available")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("CarId")
                         .HasColumnType("int");
 
@@ -173,21 +145,6 @@ namespace Train_Reservation_Application.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Trains");
-                });
-
-            modelBuilder.Entity("CalendarSeat", b =>
-                {
-                    b.HasOne("Train_Reservation_Application.Models.Calendar", null)
-                        .WithMany()
-                        .HasForeignKey("CalendarsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Train_Reservation_Application.Models.Seat", null)
-                        .WithMany()
-                        .HasForeignKey("SeatsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ReservationSeat", b =>

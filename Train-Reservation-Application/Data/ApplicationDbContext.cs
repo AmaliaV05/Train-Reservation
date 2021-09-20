@@ -13,5 +13,6 @@ namespace Train_Reservation_Application.Data
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Calendar> Calendars { get; set; }  
     }
 }

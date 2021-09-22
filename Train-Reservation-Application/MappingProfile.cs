@@ -24,6 +24,8 @@ namespace Train_Reservation_Application
             CreateMap<Reservation, ModifyReservationViewModel>();
             CreateMap<Seat, SeatsInCarViewModel>();
             CreateMap<Car, CarInTrainViewModel>();
+            CreateMap<Calendar, CalendarViewModel>();
+            CreateMap<SeatCalendar, SeatCalendarViewModel>();
         }
     }
 }

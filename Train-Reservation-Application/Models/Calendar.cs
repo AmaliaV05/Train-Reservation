@@ -9,7 +9,7 @@ namespace Train_Reservation_Application.Models
     {
         public int Id { get; set; }
         public DateTime CalendarDate { get; set; }
-        public bool AvailableSeat { get; set; }
         public List<Seat> Seats { get; set; }
+        public List<SeatCalendar> SeatCalendars { get; set; }
     }
 }

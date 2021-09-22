@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,12 +31,12 @@ namespace Train_Reservation_Application.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutReservation(int idReservation, ModifyReservationViewModel modifyReservedSeats)
         {
-            var oldReservedSeats = _context.Reservations
+            var oldReservation = _context.Reservations
                 .Where(reservation => reservation.Id == idReservation)
                 .Include(reservation => reservation.Seats)
-                .FirstOrDefault();
+                .First();
 
-            if (oldReservedSeats.Code != modifyReservedSeats.Code)
+            if (oldReservation.Code != modifyReservedSeats.Code)
             {
                 return BadRequest("Incorrect code");
             }
@@ -46,16 +46,11 @@ namespace Train_Reservation_Application.Controllers
                 return BadRequest("No seat is selected");
             }
 
-            var seatsLocation = _context.Reservations
-                .Where(reservation => reservation.Id == idReservation)
-                .Include(reservation => reservation.Seats)
-                .ToList();
-
-            foreach (Reservation reservation in seatsLocation)
+            foreach (Seat seat in oldReservation.Seats)
             {
-                foreach(Seat seat in reservation.Seats)
+                foreach (SeatCalendar seatCalendar in seat.SeatCalendars)
                 {
-                    seat.Available = true;
+                    seatCalendar.SeatAvailability = false;
                     _context.Entry(seat).State = EntityState.Modified;
                 }
             }
@@ -63,10 +58,21 @@ namespace Train_Reservation_Application.Controllers
             modifyReservedSeats.ReservedSeatsIds.ForEach(sid =>
             {
                 var seatWithId = _context.Seats.Find(sid);
-                if (seatWithId != null && seatWithId.Available == true)
+
+                if (seatWithId != null)
                 {
-                    seatWithId.Available = false;
-                    _context.Entry(seatWithId).State = EntityState.Modified;
+                    var availableSeat = seatWithId.SeatCalendars
+                    .Where(seat => seat.SeatAvailability == false)
+                    .Where(seat => seat.Calendar.CalendarDate.Date == modifyReservedSeats.ReservationDate.Date)
+                    .First();
+
+                    if (availableSeat != null)
+                    {
+                        //seatWithId.
+                    }
+
+                    availableSeat.SeatAvailability = true;
+                    _context.Entry(availableSeat).State = EntityState.Modified;
                 }
             });
 
@@ -93,9 +99,9 @@ namespace Train_Reservation_Application.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> PostReservation(NewReservationRequestViewModel newReservationRequest)
-        {    
-            var bookingCustomerSSN = newReservationRequest.SocialSecurityNumber;            
-            
+        {
+            var bookingCustomerSSN = newReservationRequest.SocialSecurityNumber;
+
             var checkSSN = _context.Customers
                 .Where(customer => customer.SocialSecurityNumber == bookingCustomerSSN)
                 .FirstOrDefault();
@@ -104,33 +110,19 @@ namespace Train_Reservation_Application.Controllers
 
             if (checkSSN == null)
             {
-                newCustomer = new Customer
-                {
-                    SocialSecurityNumber = newReservationRequest.SocialSecurityNumber,
-                    Name = newReservationRequest.Name,
-                    Email = newReservationRequest.Email
-                };
+                newCustomer = AddCustomer(newReservationRequest);
 
                 _context.Customers.Add(newCustomer);
                 await _context.SaveChangesAsync();
+            }            
+
+            var checkTrainBySeatId = CheckExistingReservation(newReservationRequest);
+
+            if (checkTrainBySeatId)
+            {
+                return BadRequest("There is already a reservation on the given CNP on the same date and train");
             }
-            //----------------
-            var bookingCustomerDate = newReservationRequest.ReservationWithSeatsViewModel.ReservationDate;
 
-            var oldReservedSeats = _context.Customers
-                .Where(customer => customer.SocialSecurityNumber == bookingCustomerSSN)
-                .Include(customer => customer.Reservations
-                    .Where(reservation => reservation.ReservationDate.Date == bookingCustomerDate))
-                .ThenInclude(reservation => reservation.Seats)
-                .ThenInclude(seat => seat.Car)
-                .ThenInclude(car => car.Train)
-                .AsSplitQuery()
-                .Select(p => _mapper.Map<OldCustomerReservationViewModel>(p))
-                .ToList();//aflu lista id tren de la rezervarile deja facute
-
-
-
-            //-------
             List<Seat> reservedSeats = AddSeatsToReservation(newReservationRequest);
 
             if (reservedSeats.Count == 0)
@@ -138,31 +130,78 @@ namespace Train_Reservation_Application.Controllers
                 return BadRequest("No seat is selected");
             }
 
-            var reservedTrainId = _context.Seats
-                .Include(seat => seat.Car)
-                .ThenInclude(car => car.Train)
-                .Select(c => _mapper.Map<SeatsInCarViewModel>(c));//aflu id tren de la rezervarea curenta
-
-            var reservation = new Reservation();
+            var newReservation = new Reservation();
 
             if (checkSSN == null)
             {
-                reservation = AddReservation(newReservationRequest, reservedSeats, newCustomer);
+                newReservation = AddReservation(newReservationRequest, reservedSeats, newCustomer);
             }
             else
             {
-                reservation = AddReservation(newReservationRequest, reservedSeats, checkSSN);
+                newReservation = AddReservation(newReservationRequest, reservedSeats, checkSSN);
             }
 
-            _context.Reservations.Add(reservation);
+            _context.Reservations.Add(newReservation);
             await _context.SaveChangesAsync();
 
-            return Ok(reservation.Code);
+            return Ok(newReservation.Code);
         }
 
         private bool ReservationExists(int id)
         {
             return _context.Reservations.Any(e => e.Id == id);
+        }
+
+        private static Customer AddCustomer(NewReservationRequestViewModel newReservationRequest)
+        {
+            var newCustomer = new Customer
+            {
+                SocialSecurityNumber = newReservationRequest.SocialSecurityNumber,
+                Name = newReservationRequest.Name,
+                Email = newReservationRequest.Email
+            };
+
+            return newCustomer;
+        }
+
+        private bool CheckExistingReservation(NewReservationRequestViewModel newReservationRequest)
+        {
+            var bookingCustomerSSN = newReservationRequest.SocialSecurityNumber;
+
+            var bookingCustomerDate = newReservationRequest.ReservationWithSeatsViewModel.ReservationDate;
+
+            var currentReservationFirstSeatId = newReservationRequest.ReservationWithSeatsViewModel.ReservedSeatsIds.First();
+
+            var currentReservationSeat = _context.Seats
+                .Where(seat => seat.Id == currentReservationFirstSeatId)
+                .Include(seat => seat.Car)
+                .ThenInclude(car => car.Train)
+                .AsSplitQuery()
+                .First();
+
+            var currentReservationTrainId = currentReservationSeat.Car.Train.Id;
+
+            var checkOldReservationTrains = _context.Customers
+                .Where(customer => customer.SocialSecurityNumber == bookingCustomerSSN)
+                .Include(customer => customer.Reservations
+                    .Where(reservation => reservation.ReservationDate.Date == bookingCustomerDate.Date))
+                .ThenInclude(reservation => reservation.Seats.Where(seat => seat.Id == currentReservationFirstSeatId))
+                .ThenInclude(seat => seat.Car)
+                .ThenInclude(car => car.Train)
+                .AsSplitQuery()
+                .First();
+
+            foreach (Reservation reservation in checkOldReservationTrains.Reservations)
+            {
+                var reservationExists = reservation.Seats.Exists(seat => seat.Car.Train.Id == currentReservationTrainId);
+
+                if (reservationExists)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<Seat> AddSeatsToReservation(NewReservationRequestViewModel newReservationRequest)
@@ -172,10 +211,23 @@ namespace Train_Reservation_Application.Controllers
             newReservationRequest.ReservationWithSeatsViewModel.ReservedSeatsIds.ForEach(sid =>
             {
                 var seatWithId = _context.Seats.Find(sid);
-                if (seatWithId != null && seatWithId.Available == true)
+
+                if (seatWithId != null)
                 {
-                    reservedSeats.Add(seatWithId);
-                    seatWithId.Available = false;
+                    var availableSeat = _context.Seats.Where(seat => seat.Id == sid)
+                    .Include(seat => seat.SeatCalendars
+                    .Where(seat => seat.Calendar.CalendarDate.Date == newReservationRequest.ReservationWithSeatsViewModel.ReservationDate.Date))
+                    .First();
+
+                    foreach (SeatCalendar seat in availableSeat.SeatCalendars)
+                    {
+                        if (seat.SeatAvailability == false)
+                        {
+                            reservedSeats.Add(seatWithId);
+                            seat.SeatAvailability = true;
+                            _context.Entry(seat).State = EntityState.Modified;
+                        }
+                    }
                 }
             });
 
@@ -195,7 +247,6 @@ namespace Train_Reservation_Application.Controllers
             };
 
             return reservation;
-        }
+        }       
     }
 }
-*/

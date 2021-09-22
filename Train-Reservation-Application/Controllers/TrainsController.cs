@@ -33,53 +33,40 @@ namespace Train_Reservation_Application.Controllers
                 .ToList();
         }
 
-        [HttpGet("{idTrain}/filter-cars/{carType}")]
+        [HttpGet("{idTrain}/{date}/filter-cars/{carType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, CarType carType)
+        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType(int idTrain, DateTime date, CarType carType)
         {
             if (carType == 0)
             {
                 var trainWithCarsViewModel = _context.Trains
-                .Where(train => train.Id == idTrain)
-                .Include(train => train.Cars)
-                .ThenInclude(car => car.Seats)
-                .AsSplitQuery()
-                .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-                .ToList();
+                 .Where(train => train.Id == idTrain)
+                 .Include(train => train.Cars)
+                 .ThenInclude(car => car.Seats)
+                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == date.Date))
+                 .AsSplitQuery()
+                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
+                 .ToList();
 
                 return trainWithCarsViewModel;
-            } 
-            
-            var carListFiltered = _context.Trains
-            .Where(train => train.Id == idTrain)
-            .Include(train => train.Cars.Where(car => car.Type == carType))
-            .ThenInclude(car => car.Seats)
-            .AsSplitQuery()
-            .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-            .ToList();
+            }
 
-            return carListFiltered;
+            var trainWithCarsViewModelFiltered = _context.Trains
+                 .Where(train => train.Id == idTrain)
+                 .Include(train => train.Cars.Where(car => car.Type == carType))
+                 .ThenInclude(car => car.Seats)
+                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == date.Date))
+                 .AsSplitQuery()
+                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
+                 .ToList();
+
+            return trainWithCarsViewModelFiltered;
         }
 
-        [HttpGet("{idTrain}/{date}/filter-cars/{carType}/COPY")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<TrainWithCarsViewModel>> FilterCarsByType2(int idTrain, DateTime date, CarType carType)
-        {
-            var trainWithCarsViewModel = _context.Trains
-             .Where(train => train.Id == idTrain)
-             .Include(train => train.Cars)
-             .ThenInclude(car => car.Seats)
-             .AsSplitQuery()
-             .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-             .ToList();
-
-            return trainWithCarsViewModel;
-        }
-
-        [HttpGet("{idTrain}/filter-cars-by-available-seats/{N}")]
+        [HttpGet("{idTrain}/{date}/filter-cars-by-available-seats/{N}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<IEnumerable<int>> SeatsList(int idTrain, int N)
+        public ActionResult<IEnumerable<int>> SeatsList(int idTrain, DateTime date, int N)
         {
             List<int> occupiedSeatsList = new();
 
@@ -87,6 +74,7 @@ namespace Train_Reservation_Application.Controllers
                 .Where(train => train.Id == idTrain)
                 .Include(train => train.Cars)
                 .ThenInclude(car => car.Seats)
+                .ThenInclude(seat => seat.Calendars.Where(calendar => calendar.CalendarDate.Date == date.Date))
                 .AsSplitQuery()
                 .ToList();
 
@@ -96,7 +84,7 @@ namespace Train_Reservation_Application.Controllers
                 {
                     foreach (Seat checkSeat in checkCar.Seats)
                     {
-                        if(checkSeat.Number == 1)
+                        if (checkSeat.Number == 1)
                         {
                             occupiedSeatsList.Add(0);
                             occupiedSeatsList.Add(checkCar.CarNumber);
@@ -117,25 +105,25 @@ namespace Train_Reservation_Application.Controllers
 
             List<int> availableSeatsList = new();
 
-            for (int i = 0; i < occupiedSeatsList.Count-2; i+=2)
+            for (int i = 0; i < occupiedSeatsList.Count - 2; i += 2)
             {
-                if (occupiedSeatsList[i + 2] - occupiedSeatsList[i] - 1 >= N && occupiedSeatsList[i+1] == occupiedSeatsList[i + 3])   //din acelasi vagon
+                if (occupiedSeatsList[i + 2] - occupiedSeatsList[i] - 1 >= N && occupiedSeatsList[i + 1] == occupiedSeatsList[i + 3])   //din acelasi vagon
                 {
                     for (int t = occupiedSeatsList[i] + 1; t < occupiedSeatsList[i + 2]; t++)
                     {
-                        availableSeatsList.Add(t);
-                        availableSeatsList.Add(occupiedSeatsList[i + 1]);
+                        availableSeatsList.Add(t);//seat ids
+                        availableSeatsList.Add(occupiedSeatsList[i + 1]);// car number
                     }
                 }
-            }
+            }            
 
             return availableSeatsList;            
         }
 
-        [HttpGet("{idTrain}/filter-cars-by-available-COPY/{N}")]
+        [HttpGet("{idTrain}/{date}/filter-cars-by-available-seats-COPY/{N}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<IEnumerable<int>> SeatsListID(int idTrain, int N)
+        public ActionResult<IEnumerable<int>> SeatsListID(int idTrain, DateTime date, int N)
         {
             List<int> occupiedSeatsList = new();
 
@@ -143,6 +131,7 @@ namespace Train_Reservation_Application.Controllers
                 .Where(train => train.Id == idTrain)
                 .Include(train => train.Cars)
                 .ThenInclude(car => car.Seats)
+                .ThenInclude(seat => seat.Calendars.Where(calendar => calendar.CalendarDate.Date == date.Date))
                 .AsSplitQuery()
                 .ToList();
 
@@ -192,6 +181,27 @@ namespace Train_Reservation_Application.Controllers
                     }
                 }
             }
+
+            /*List<Seat> seats = new();
+
+            for (int i = 0; i < availableSeatsListIds.Count; i++)
+            {
+                seats = _context.Seats
+                    .Where(seat => seat.Id == availableSeatsListIds[i])
+                    .ToList();
+            }
+
+            foreach (Seat seat in seats)
+            {
+                var myList = _context.Trains
+                    .Where(train => train.Id == idTrain)
+                    .Include(train => train.Cars)
+                    .ThenInclude(car => car.Seats.Where(seat => seat.Id == ))
+                    .AsSplitQuery()
+                    .ToList();
+            }*/
+
+
 
             var result = string.Join(",", availableSeatsListIds.ToArray());
 

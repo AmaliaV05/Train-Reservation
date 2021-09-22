@@ -3,21 +3,38 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Train_Reservation_Application.Data;
 
 namespace Train_Reservation_Application.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210920181632_UpdateSeatAddPropertyGroup")]
+    partial class UpdateSeatAddPropertyGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("CalendarSeat", b =>
+                {
+                    b.Property<int>("CalendarsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SeatsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CalendarsId", "SeatsId");
+
+                    b.HasIndex("SeatsId");
+
+                    b.ToTable("CalendarSeat");
+                });
 
             modelBuilder.Entity("ReservationSeat", b =>
                 {
@@ -40,6 +57,9 @@ namespace Train_Reservation_Application.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool>("AvailableSeat")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("CalendarDate")
                         .HasColumnType("datetime2");
@@ -129,6 +149,9 @@ namespace Train_Reservation_Application.Migrations
                     b.Property<int?>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Group")
+                        .HasColumnType("bit");
+
                     b.Property<int>("Number")
                         .HasColumnType("int");
 
@@ -137,24 +160,6 @@ namespace Train_Reservation_Application.Migrations
                     b.HasIndex("CarId");
 
                     b.ToTable("Seats");
-                });
-
-            modelBuilder.Entity("Train_Reservation_Application.Models.SeatCalendar", b =>
-                {
-                    b.Property<int>("CalendarId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SeatId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("SeatAvailability")
-                        .HasColumnType("bit");
-
-                    b.HasKey("CalendarId", "SeatId");
-
-                    b.HasIndex("SeatId");
-
-                    b.ToTable("SeatCalendar");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Train", b =>
@@ -173,6 +178,21 @@ namespace Train_Reservation_Application.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Trains");
+                });
+
+            modelBuilder.Entity("CalendarSeat", b =>
+                {
+                    b.HasOne("Train_Reservation_Application.Models.Calendar", null)
+                        .WithMany()
+                        .HasForeignKey("CalendarsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Train_Reservation_Application.Models.Seat", null)
+                        .WithMany()
+                        .HasForeignKey("SeatsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ReservationSeat", b =>
@@ -217,30 +237,6 @@ namespace Train_Reservation_Application.Migrations
                     b.Navigation("Car");
                 });
 
-            modelBuilder.Entity("Train_Reservation_Application.Models.SeatCalendar", b =>
-                {
-                    b.HasOne("Train_Reservation_Application.Models.Calendar", "Calendar")
-                        .WithMany("SeatCalendars")
-                        .HasForeignKey("CalendarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Train_Reservation_Application.Models.Seat", "Seat")
-                        .WithMany("SeatCalendars")
-                        .HasForeignKey("SeatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Calendar");
-
-                    b.Navigation("Seat");
-                });
-
-            modelBuilder.Entity("Train_Reservation_Application.Models.Calendar", b =>
-                {
-                    b.Navigation("SeatCalendars");
-                });
-
             modelBuilder.Entity("Train_Reservation_Application.Models.Car", b =>
                 {
                     b.Navigation("Seats");
@@ -249,11 +245,6 @@ namespace Train_Reservation_Application.Migrations
             modelBuilder.Entity("Train_Reservation_Application.Models.Customer", b =>
                 {
                     b.Navigation("Reservations");
-                });
-
-            modelBuilder.Entity("Train_Reservation_Application.Models.Seat", b =>
-                {
-                    b.Navigation("SeatCalendars");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Train", b =>

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Seat = exports.Car = exports.TYPE = exports.Type = exports.Train = void 0;
+exports.Calendar = exports.SeatCalendar = exports.Seat = exports.Car = exports.TYPE = exports.Type = exports.Train = void 0;
 var Train = /** @class */ (function () {
     function Train() {
     }
@@ -27,4 +27,16 @@ var Seat = /** @class */ (function () {
     return Seat;
 }());
 exports.Seat = Seat;
+var SeatCalendar = /** @class */ (function () {
+    function SeatCalendar() {
+    }
+    return SeatCalendar;
+}());
+exports.SeatCalendar = SeatCalendar;
+var Calendar = /** @class */ (function () {
+    function Calendar() {
+    }
+    return Calendar;
+}());
+exports.Calendar = Calendar;
 //# sourceMappingURL=train.model.js.map

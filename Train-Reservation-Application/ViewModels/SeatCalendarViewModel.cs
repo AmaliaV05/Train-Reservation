@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 
 namespace Train_Reservation_Application.ViewModels
 {
-    public class SeatsInCarViewModel
+    public class SeatCalendarViewModel
     {
-        public int Id { get; set; }
-        public int Number { get; set; }
-        public CarInTrainViewModel Car { get; set; }
+        public bool SeatAvailability { get; set; }
     }
 }

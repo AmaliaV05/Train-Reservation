@@ -4,7 +4,7 @@
       <div class="col-sm-6">
         <mat-form-field appearance="fill">
           <mat-label>Car Type</mat-label>
-          <mat-select>
+          <mat-select [(ngModel)]="carType" (change)="eventSelection($event.value)">
             <mat-option *ngFor="let option of TYPES" [value]="option">
               {{ option }}
             </mat-option>
@@ -30,7 +30,7 @@
         </button>
       </div>
     </div>
-    <div class="container border" *ngIf="N !== null && N > 1; else elseTemplate">
+    <div class="container border" *ngIf="N > 1; else elseTemplate">
       <div class="container border" *ngIf="filteredCarsByN">
         <div class="p-2" *ngFor="let train of filteredCarsByN">
           {{ train.name }}
@@ -54,12 +54,20 @@
           <div class="p-2 border" *ngFor="let car of train.cars">
             Car No. {{ car.carNumber }}<br />
             <div class="d-inline" *ngFor="let seat of car.seats">
-              <button class="border" mat-raised-button
-                   [seat]="seat" [style.background-color]="seat.available ? '#00E828': 'red'"
-                   (click)="addSeat(seat)"
-                   [disabled]="!seat.available">
-                {{ seat.number }}
-              </button>
+              <div class="d-inline" *ngFor="let calendar of seat.seatCalendars">                
+                <button class="border" mat-raised-button
+                        [calendar]="calendar" [style.background-color]="!calendar.availability ? '#00E828': 'red'"
+                        (click)="addSeat(seat)"
+                        [disabled]="calendar.availability">
+                  {{ seat.number }}
+                </button>
+                <!--<button class="border" mat-raised-button
+                        [calendar]="calendar" [style.background-color]="!calendar.availableSeat ? '#00E828': 'red'"
+                        (click)="addSeat(seat)"
+                        [disabled]="calendar.availableSeat">
+                  {{ seat.number }}
+                </button>-->
+              </div>              
             </div>
           </div>
         </div>

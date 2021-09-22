@@ -12,25 +12,30 @@ export class CarListComponent implements OnInit {
   filteredCars: TrainWithCarsWithSeats[];
   TYPES = TYPE;
   idTrain: number;
-  carType = 'All';
+  carType: string;
   reserveSeats = new Array<Seat>();
   filteredCarsByN: TrainWithCarsWithSeats[];
   N = 1;
   addButtonDisabled = false;
   removeButtonDisabled = true;
   reserveButton = true;
+  filterDate = new Date();
+  myDate: string;
+  flatArray: TrainWithCarsWithSeats[];
 
   constructor(private trainService: TrainsService,
     private route: ActivatedRoute,
     private router: Router) { }
 
   ngOnInit() {
+    this.myDate = this.filterDate.toISOString().split('T')[0];
     this.idTrain = this.route.snapshot.params['id'];
-    this.getFilteredCars();
+    this.eventSelection(event);
+    this.getFilteredCars(this.myDate);   
   }
 
-  getFilteredCars() {
-    this.trainService.get(`Trains/${this.idTrain}/filter-cars/${this.carType}`)
+  getFilteredCars(giveDate: string) {
+    this.trainService.get(`Trains/${this.idTrain}/${giveDate}/filter-cars/${this.carType}`)
       .subscribe((response: TrainWithCarsWithSeats[]) =>
         this.filteredCars = response);
   }
@@ -66,5 +71,9 @@ export class CarListComponent implements OnInit {
 
   goToFinishReservation() {
     this.router.navigateByUrl('finish-reservation')
+  }
+
+  eventSelection(event) {
+    this.carType = event;
   }
 }

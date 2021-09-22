@@ -1,3 +1,5 @@
+import { Reservation } from "../reservations/reservations.model";
+
 export class Train {
   id: number;
   name: string;
@@ -25,7 +27,19 @@ export class Car {
 export class Seat {
   id: number;
   number: number;
-  available: string;
+  reservations: Reservation[];
+  seatCalendars: SeatCalendar[];
+}
+
+export class SeatCalendar {
+  availability: string;
+}
+
+export class Calendar {
+  id: number;
+  calendarDate: string;
+  seatCalendars: SeatCalendar[];
+  seats: Seat[];
 }
 
 export interface TrainWithCarsWithSeats {
@@ -40,5 +54,11 @@ export interface CarsWithSeats {
   carNumber: number;
   numberOfSeats: number;
   type: Type;
-  seats: Seat[];
+  seats: SeatsAvailability[];
+}
+
+export interface SeatsAvailability {
+  id: number;
+  number: number;
+  seatCalendars: SeatCalendar[];
 }

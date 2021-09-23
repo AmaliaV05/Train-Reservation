@@ -4,9 +4,9 @@
       <div class="col-sm-6">
         <mat-form-field appearance="fill">
           <mat-label>Car Type</mat-label>
-          <mat-select [(ngModel)]="carType" (change)="eventSelection($event.value)">
-            <mat-option *ngFor="let option of TYPES" [value]="option">
-              {{ option }}
+          <mat-select [(value)]="selectedCarType" (selectionChange)="onChangeFilteredCars($event)">
+            <mat-option *ngFor="let carType of carTypes" [value]="carType.value">
+              {{carType.text}}
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -48,27 +48,27 @@
       </div>
     </div>
     <ng-template #elseTemplate>
-      <div class="container" style="height: 50%; overflow: auto;" *ngIf="filteredCars">
+      <div class="container" *ngIf="filteredCars">
         <div class="p-2 border" *ngFor="let train of filteredCars">
           {{ train.name }}
           <div class="p-2 border" *ngFor="let car of train.cars">
             Car No. {{ car.carNumber }}<br />
             <div class="d-inline" *ngFor="let seat of car.seats">
-              <div class="d-inline" *ngFor="let calendar of seat.seatCalendars">                
+              <div class="d-inline" *ngFor="let calendar of seat.seatCalendars;let i = index">
                 <button class="border" mat-raised-button
-                        [calendar]="calendar" [style.background-color]="!calendar.availability ? '#00E828': 'red'"
+                        [calendar]="calendar" [style.background-color]="!calendar.seatAvailability ? '#00E828': 'red'"
                         (click)="addSeat(seat)"
-                        [disabled]="calendar.availability">
+                        [disabled]="calendar.seatAvailability">
                   {{ seat.number }}
                 </button>
                 <!--<button class="border" mat-raised-button
-                        [calendar]="calendar" [style.background-color]="!calendar.availableSeat ? '#00E828': 'red'"
-                        (click)="addSeat(seat)"
-                        [disabled]="calendar.availableSeat">
-                  {{ seat.number }}
-                </button>-->
-              </div>              
-            </div>
+  [calendar]="calendar" [style.background-color]="!calendar.availableSeat ? '#00E828': 'red'"
+  (click)="addSeat(seat)"
+  [disabled]="calendar.availableSeat">
+   {{ seat.number }}
+      </button>-->
+              </div>
+              </div>
           </div>
         </div>
       </div>
@@ -76,14 +76,14 @@
 
   </div>
   <div class="col-5">
-    <div class="card" *ngIf="reserveSeats">
-      <h5 class="card-title">You have chosen:</h5>
+    <div class="card" *ngIf="reserveSeats && selectedCarType !== 'All'">
+      <h5 class="card-title" *ngIf="reserveSeats && selectedCarType !== 'All'">You have chosen:</h5>
       <div class="card-body" *ngFor="let seat of reserveSeats">
         Seat No. {{ seat.number }}
       </div>
     </div>
     <div class="container">
-      <button class="btn btn-primary" [disabled]="reserveButton" (click)="goToFinishReservation()">Reserve now</button>
+      <button class="btn btn-primary" *ngIf="reserveSeats && selectedCarType !== 'All'" [disabled]="reserveButton" (click)="goToFinishReservation()">Reserve now</button>
     </div>    
   </div>
 </div>

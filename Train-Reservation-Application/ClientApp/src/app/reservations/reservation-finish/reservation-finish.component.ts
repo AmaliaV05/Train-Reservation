@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DataService } from '../../home/data.service';
-import { NewReservationRequest } from '../reservations.model';
+import { NewReservationRequestViewModel } from '../reservations.model';
 import { ReservationsService } from '../reservations.service';
 import { Subscription } from 'rxjs';
 
@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
 })
 export class ReservationFinishComponent implements OnInit, OnDestroy {
 
-  newReservation: NewReservationRequest;
+  newReservation: NewReservationRequestViewModel;
   code: string;
   reservationDate: string;
   subscription: Subscription;

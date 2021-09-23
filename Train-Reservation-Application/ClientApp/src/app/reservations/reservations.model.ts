@@ -4,7 +4,7 @@ export class Reservation {
   id: number;
   code: string;
   reservationDate: string;
-  seat: Seat[];
+  seats: Seat[];
 }
 
 export class Customer {
@@ -12,17 +12,17 @@ export class Customer {
   socialSecurityNumber: string;
   name: string;
   email: string;
-  reservation: Reservation[];
+  reservations: Reservation[];
 }
 
-export interface ReservedSeats {
-  reservationDate: string;
-  reservedSeatsIds: number[];
-}
-
-export interface NewReservationRequest {
+export interface NewReservationRequestViewModel {
   socialSecurityNumber: string;
   name: string;
   email: string;
-  reservedSeats: ReservedSeats;
+  reservationWithSeatsViewModel: ReservedSeatsViewModel;
+}
+
+export interface ReservedSeatsViewModel {
+  reservationDate: string;
+  reservedSeatsIds: number[];
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Calendar = exports.SeatCalendar = exports.Seat = exports.Car = exports.TYPE = exports.Type = exports.Train = void 0;
+exports.Calendar = exports.SeatCalendar = exports.Seat = exports.Car = exports.Type = exports.Train = void 0;
 var Train = /** @class */ (function () {
     function Train() {
     }
@@ -9,12 +9,11 @@ var Train = /** @class */ (function () {
 exports.Train = Train;
 var Type;
 (function (Type) {
-    Type["All"] = "All";
-    Type["FirstClass"] = "First Class";
-    Type["SecondClass"] = "Second Class";
-    Type["Sleeping"] = "Slepping";
+    Type[Type["All"] = 0] = "All";
+    Type[Type["FirstClass"] = 1] = "FirstClass";
+    Type[Type["SecondClass"] = 2] = "SecondClass";
+    Type[Type["Sleeping"] = 3] = "Sleeping";
 })(Type = exports.Type || (exports.Type = {}));
-exports.TYPE = ['All', 'First Class', 'Second Class', 'Sleeping'];
 var Car = /** @class */ (function () {
     function Car() {
     }

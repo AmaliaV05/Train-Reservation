@@ -23,13 +23,13 @@ export class DateFilterComponent implements OnInit, OnDestroy {
     private data: DataService) { }
 
   ngOnInit() {
-    this.myForm = new FormGroup({
+    /*this.myForm = new FormGroup({
       'presentDate': new FormControl((new Date()).toISOString().substring(0, 10)),
-    });
+    });*/    
     this.myDate = this.filterDate.toISOString().split('T')[0];
-    this.getFilteredTrains(this.myDate);
     this.subscription = this.data.currentMessage.subscribe(message =>
-      this.myDate = message)
+      this.myDate = message);
+    this.getFilteredTrains(this.myDate);    
   }
 
   ngOnDestroy() {

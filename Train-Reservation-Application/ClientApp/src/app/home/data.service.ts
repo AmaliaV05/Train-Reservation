@@ -6,13 +6,15 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class DataService {
 
-  private messageSource = new BehaviorSubject<any>("");
+  myDate: string;
+
+  private messageSource = new BehaviorSubject('2021-09-14');
   currentMessage = this.messageSource.asObservable();
 
   constructor() { }
 
-  getReservationDate(date: any) {
+  getReservationDate(date: string) {
     this.messageSource.next(date);
-  }
+  } 
 
 }

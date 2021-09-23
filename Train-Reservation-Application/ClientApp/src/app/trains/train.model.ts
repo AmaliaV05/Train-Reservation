@@ -8,13 +8,11 @@ export class Train {
 }
 
 export enum Type {
-  All = "All",
-  FirstClass = "First Class",
-  SecondClass = "Second Class",
-  Sleeping = "Slepping"
+  All,
+  FirstClass,
+  SecondClass,
+  Sleeping
 }
-
-export const TYPE = ['All', 'First Class', 'Second Class', 'Sleeping'];
 
 export class Car {
   id: number;
@@ -28,37 +26,44 @@ export class Seat {
   id: number;
   number: number;
   reservations: Reservation[];
+  calendars: Calendar[];
   seatCalendars: SeatCalendar[];
 }
 
 export class SeatCalendar {
-  availability: string;
+  seat: Seat;
+  calendar: Calendar;
+  availability: string; 
 }
 
 export class Calendar {
   id: number;
   calendarDate: string;
-  seatCalendars: SeatCalendar[];
   seats: Seat[];
+  seatCalendars: SeatCalendar[];
 }
 
-export interface TrainWithCarsWithSeats {
+export interface TrainWithCarsViewModel {
   id: number;
   name: string;
   dayOfWeek: string;
-  cars: CarsWithSeats[];
+  cars: CarWithSeatsViewModel[];
 }
 
-export interface CarsWithSeats {
+export interface CarWithSeatsViewModel {
   id: number;
   carNumber: number;
   numberOfSeats: number;
   type: Type;
-  seats: SeatsAvailability[];
+  seats: SeatViewModel[];
 }
 
-export interface SeatsAvailability {
+export interface SeatViewModel {
   id: number;
   number: number;
-  seatCalendars: SeatCalendar[];
+  seatCalendars: SeatCalendarViewModel[];
+}
+
+export interface SeatCalendarViewModel {
+  seatAvailability: string;
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Seat, TrainWithCarsViewModel } from '../train.model';
 import { TrainsService } from '../trains.service';
 import { ActivatedRoute, Router } from '@angular/router';

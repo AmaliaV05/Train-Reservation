@@ -1,10 +1,8 @@
-import { Seat } from "../trains/train.model";
-
 export class Reservation {
   id: number;
   code: string;
   reservationDate: string;
-  seats: Seat[];
+  seats: any[];
 }
 
 export class Customer {

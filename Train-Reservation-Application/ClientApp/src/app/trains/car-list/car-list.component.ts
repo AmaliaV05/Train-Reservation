@@ -1,101 +1,79 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Seat, TrainWithCarsViewModel } from '../train.model';
-import { TrainsService } from '../trains.service';
+import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataService } from '../../home/data.service';
 import { Subscription } from 'rxjs';
+import { DataService } from '../../home/data.service';
+import { CarType, DayOfWeek, TrainWithCarsViewModel } from '../train.model';
+import { TrainsService } from '../trains.service';
 
 @Component({
   selector: 'app-car-list',
   templateUrl: './car-list.component.html'
 })
 export class CarListComponent implements OnInit, OnDestroy {
-
-  filteredCars: TrainWithCarsViewModel[];
+  selectedTrain: TrainWithCarsViewModel = {
+    id: 0,
+    name: '',
+    dayOfWeek: DayOfWeek.Sunday,
+    cars: []
+  };
   idTrain: number;
-  selectedCarType = 'All';
-  carTypes = [
-    { value: 'FirstClass', text: 'First Class' },
-    { value: 'SecondClass', text: 'Second Class' },
-    { value: 'Sleeping', text: 'Sleeping' }
-  ];
-  reserveSeats = new Array<Seat>();
-  filteredCarsByN: TrainWithCarsViewModel[];
+  selectedCarType = CarType.All;
   N = 1;
-  addButtonDisabled = false;
-  removeButtonDisabled = true;
+  reserveSeats = new Array<any>();
   reserveButton = true;
-  filterDate = new Date();
-  myDate: string;// = '2021-09-14';
+  selectedDate: Date;
+  seats: number[];
+  disabled: boolean;
   subscription: Subscription;
 
   constructor(private trainService: TrainsService,
     private route: ActivatedRoute,
     private router: Router,
-    private data: DataService) { }
+    private dataService: DataService) { }
 
   ngOnInit() {
-    this.subscription = this.data.currentMessage.subscribe(message =>
-      this.myDate = message);
-    this.idTrain = this.route.snapshot.params['id'];    
-    this.getFilteredCars();
+    this.subscription = this.dataService.currentMessage$.subscribe(message =>
+      this.selectedDate = message);
+    this.idTrain = this.route.snapshot.params['id'];
+    this.getSelectedTrain();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  getFilteredCars() {
-    //this.myDate = this.filterDate.toISOString().split('T')[0];
-    this.trainService.get(`Trains/${this.idTrain}/${this.myDate}/filter-cars/${this.selectedCarType}`)
-      .subscribe((response: TrainWithCarsViewModel[]) =>
-        this.filteredCars = response);
+  getSelectedTrain() {
+    this.trainService.getTrainWithCars(this.idTrain, this.selectedDate, this.selectedCarType)
+      .subscribe((response: TrainWithCarsViewModel) => {
+        this.selectedTrain = response;
+      });
   }
 
-  onChangeFilteredCars(option) {
-    let selectedCarType = option.value;
-    //this.myDate = this.filterDate.toISOString().split('T')[0];
-    this.trainService.get(`Trains/${this.idTrain}/${this.myDate}/filter-cars/${selectedCarType}`)
-      .subscribe((response: TrainWithCarsViewModel[]) =>
-        this.filteredCars = response);
+  getFilteredCars(item: TrainWithCarsViewModel) {
+    this.selectedTrain = item;
   }
 
-  addSeat(seat: Seat) {
-    if (this.selectedCarType !== 'All') {
+  getSelectedMultipleSeatsNumber(item: number) {
+    this.N = item;
+  }
+
+  getSelectedMultipleSeatsList(item: number[]) {
+    this.seats = item;
+  }
+
+  checkMultipleSeats(id: number) {
+    this.disabled = !this.seats.includes(id);
+    return {'background-color': this.seats.includes(id) ? 'blue' : 'white'};
+  }
+
+  addSeat(seat: any) {
+    if (this.selectedCarType !== CarType.All) {
       this.reserveSeats.push(seat);
       this.reserveButton = false;
     }     
   }
 
-  incrementSeatNumber() {
-    this.N++;
-    this.addButtonDisabled = this.N < 8 ? false : true;
-    this.removeButtonDisabled = this.N > 1 ? false : true;
-    this.trainService.get(`Trains/${this.idTrain}/filter-cars-by-available-seats/${this.N}`)
-      .subscribe((response: TrainWithCarsViewModel[]) => {
-        this.filteredCarsByN = response;
-        console.log(response);
-      }
-      );
-  }
-
-  decrementSeatNumber() {
-    this.addButtonDisabled = this.N >= 1 ? false : true;
-    this.N--;
-    this.removeButtonDisabled = this.N === 1 ? true : false;
-    this.trainService.get(`Trains/${this.idTrain}/filter-cars-by-available-seats/${this.N}`)
-      .subscribe((response: TrainWithCarsViewModel[]) => {
-        this.filteredCarsByN = response;
-        console.log(response);
-      }
-      );
-  }
-
   goToFinishReservation() {
     this.router.navigateByUrl('finish-reservation')
-  }
-
-  getCurrentReservationDate() {
-    this.data.getReservationDate(this.myDate);    
   }
 }

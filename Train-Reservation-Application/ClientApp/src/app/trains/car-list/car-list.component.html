@@ -1,89 +1,66 @@
 <div class="row">
   <div class="col-7">
     <div class="form-group row">
-      <div class="col-sm-6">
-        <mat-form-field appearance="fill">
-          <mat-label>Car Type</mat-label>
-          <mat-select [(value)]="selectedCarType" (selectionChange)="onChangeFilteredCars($event)">
-            <mat-option *ngFor="let carType of carTypes" [value]="carType.value">
-              {{carType.text}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-      <div class="col-sm-1">
-        <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
-                [disabled]="removeButtonDisabled" (click)="decrementSeatNumber()">
-          <mat-icon>remove</mat-icon>
-        </button>
-      </div>
-      <div class="col-1">
-        <mat-icon style="vertical-align: middle;">person_outline</mat-icon>
-      </div>
-      <div class="col-1">
-        <p class="text-center pt-2">{{ N }}</p>
-      </div>      
-      <div class="col-sm-2">
-        <button mat-mini-fab color="accent" aria-label="Example icon button with a plus one icon"
-                [disabled]="addButtonDisabled" (click)="incrementSeatNumber()">
-          <mat-icon>add</mat-icon>
-        </button>
-      </div>
+      <app-select-car (filteredCarsByType)="getFilteredCars($event)"
+                      [idTrain]="idTrain"
+                      [selectedDate]="selectedDate">
+      </app-select-car>
+      <app-multiple-seats (selectedGroupSeatsNumber)="getSelectedMultipleSeatsNumber($event)"
+                          (selectedGroupSeatsList)="getSelectedMultipleSeatsList($event)"
+                          [idTrain]="idTrain" 
+                          [selectedDate]="selectedDate">
+
+      </app-multiple-seats>
     </div>
-    <div class="container border" *ngIf="N > 1; else elseTemplate">
-      <div class="container border" *ngIf="filteredCarsByN">
-        <div class="p-2" *ngFor="let train of filteredCarsByN">
-          {{ train.name }}
-          <div class="p-2 border" *ngFor="let car of train.cars">
-            Car No. {{ car.carNumber }} <br />
-            <div class="d-inline" *ngFor="let seat of car.seats">
-              <div class="d-inline border" style="cursor: pointer;"
-                   [seat]="seat" [style.background-color]="seat.available ? 'blue': 'red'"
-                   (click)="addSeat(seat)">
+    <div class="container" *ngIf="N > 1; else elseTemplate">
+      <div class="container" *ngIf="selectedTrain">
+        {{ selectedTrain.name }}
+        <div class="p-2 border" *ngFor="let car of selectedTrain.cars">
+          Car No. {{ car.carNumber }} <br />
+          <div class="d-inline" *ngFor="let seat of car.seats">
+            <button class="border" mat-raised-button
+                    [ngStyle]="checkMultipleSeats(seat.id)"                     
+                    (click)="addSeat(seat)"
+                    [disabled]="disabled">
+              {{ seat.number }}
+            </button>
+          </div>
+        </div>
+      </div>
+      </div>
+    <ng-template #elseTemplate>
+      <div class="container" *ngIf="selectedTrain">
+        {{ selectedTrain.name }}
+        <div class="p-2 border" *ngFor="let car of selectedTrain.cars">
+          Car No. {{ car.carNumber }}<br />
+          <div class="d-inline" *ngFor="let seat of car.seats">
+            <div class="d-inline" *ngFor="let calendar of seat.seatCalendars">
+              <button class="border" mat-raised-button
+                      [calendar]="calendar"
+                      [style.background-color]="!calendar.seatAvailability ? '#00E828': 'red'"
+                      (click)="addSeat(seat)"
+                      [disabled]="calendar.seatAvailability">
                 {{ seat.number }}
-              </div>
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <ng-template #elseTemplate>
-      <div class="container" *ngIf="filteredCars">
-        <div class="p-2 border" *ngFor="let train of filteredCars">
-          {{ train.name }}
-          <div class="p-2 border" *ngFor="let car of train.cars">
-            Car No. {{ car.carNumber }}<br />
-            <div class="d-inline" *ngFor="let seat of car.seats">
-              <div class="d-inline" *ngFor="let calendar of seat.seatCalendars;let i = index">
-                <button class="border" mat-raised-button
-                        [calendar]="calendar" [style.background-color]="!calendar.seatAvailability ? '#00E828': 'red'"
-                        (click)="addSeat(seat)"
-                        [disabled]="calendar.seatAvailability">
-                  {{ seat.number }}
-                </button>
-                <!--<button class="border" mat-raised-button
-  [calendar]="calendar" [style.background-color]="!calendar.availableSeat ? '#00E828': 'red'"
-  (click)="addSeat(seat)"
-  [disabled]="calendar.availableSeat">
-   {{ seat.number }}
-      </button>-->
-              </div>
-              </div>
-          </div>
-        </div>
-      </div>
     </ng-template>
-
   </div>
   <div class="col-5">
-    <div class="card" *ngIf="reserveSeats && selectedCarType !== 'All'">
-      <h5 class="card-title" *ngIf="reserveSeats && selectedCarType !== 'All'">You have chosen:</h5>
+    <div class="card" *ngIf="reserveSeats && selectedCarType !== 0">
+      <h5 class="card-title" *ngIf="reserveSeats && selectedCarType !== 0">You have chosen:</h5>
       <div class="card-body" *ngFor="let seat of reserveSeats">
         Seat No. {{ seat.number }}
       </div>
     </div>
     <div class="container">
-      <button class="btn btn-primary" *ngIf="reserveSeats && selectedCarType !== 'All'" [disabled]="reserveButton" (click)="goToFinishReservation()">Reserve now</button>
+      <button class="btn btn-primary" *ngIf="reserveSeats && selectedCarType !== 0"
+              [disabled]="reserveButton"
+              (click)="goToFinishReservation()">
+        Reserve now
+      </button>
     </div>    
   </div>
 </div>

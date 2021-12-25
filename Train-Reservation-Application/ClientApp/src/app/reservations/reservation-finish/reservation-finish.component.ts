@@ -13,14 +13,14 @@ export class ReservationFinishComponent implements OnInit, OnDestroy {
 
   newReservation: NewReservationRequestViewModel;
   code: string;
-  reservationDate: string;
+  reservationDate: Date;
   subscription: Subscription;
 
   constructor(private reservationService: ReservationsService,
-    private data: DataService) { }
+    private dataService: DataService) { }
 
   ngOnInit() {
-    this.subscription = this.data.currentMessage.subscribe(message =>
+    this.subscription = this.dataService.currentMessage$.subscribe(message =>
       this.reservationDate = message);
   }
 

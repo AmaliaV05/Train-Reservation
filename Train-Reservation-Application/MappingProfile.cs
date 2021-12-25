@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Train_Reservation_Application.Models;
 using Train_Reservation_Application.ViewModels;
+using Train_Reservation_Application.ViewModels.Trains;
 
 namespace Train_Reservation_Application
 {
@@ -12,20 +9,20 @@ namespace Train_Reservation_Application
     {
         public MappingProfile()
         {
-            CreateMap<Train, TrainWithCarsViewModel>();
             CreateMap<Train, TrainViewModel>();
+
+            CreateMap<Train, TrainWithCarsViewModel>();            
             CreateMap<Car, CarWithSeatsViewModel>();
             CreateMap<Seat, SeatViewModel>();
+            CreateMap<SeatCalendar, SeatCalendarViewModel>();
+            CreateMap<Calendar, CalendarViewModel>();
+
             CreateMap<Reservation, ReservedSeatsViewModel>();
             CreateMap<Customer, NewReservationRequestViewModel>();
 
             CreateMap<Customer, OldCustomerReservationViewModel>();
             CreateMap<Reservation, ReservationWithSeatsViewModel>();
-            CreateMap<Reservation, ModifyReservationViewModel>();
-            CreateMap<Seat, SeatsInCarViewModel>();
-            CreateMap<Car, CarInTrainViewModel>();
-            CreateMap<Calendar, CalendarViewModel>();
-            CreateMap<SeatCalendar, SeatCalendarViewModel>();
+            CreateMap<Reservation, ModifyReservationViewModel>();           
         }
     }
 }

@@ -1,0 +1,10 @@
+<div class="col-sm-6">
+  <mat-form-field appearance="fill">
+    <mat-label>Car Type</mat-label>
+    <mat-select [(value)]="selectedCarType" (selectionChange)="onChangeFilteredCars($event)">
+      <mat-option *ngFor="let carType of carTypes" [value]="carType.value">
+        {{carType.text}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

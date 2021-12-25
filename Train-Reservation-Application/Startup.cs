@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +10,8 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Reflection;
 using System.IO;
+using Train_Reservation_Application.Interfaces;
+using Train_Reservation_Application.Services;
 
 namespace Train_Reservation_Application
 {
@@ -22,17 +23,18 @@ namespace Train_Reservation_Application
         }
 
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(typeof(MappingProfile));
+            
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllersWithViews()
+            
+            services.AddControllers()
                 .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
-            // In production, the Angular files will be served from this directory
+           
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
@@ -56,16 +58,16 @@ namespace Train_Reservation_Application
                         Name = "Use under LICX",
                         Url = new Uri("https://example.com/license"),
                     }
-                });
-                //c.UseInlineDefinitionsForEnums();
-                // Set the comments path for the Swagger JSON and UI.
+                });                
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
+            services.AddScoped<ITrainsService, TrainsService>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+       
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSwagger();
@@ -79,8 +81,7 @@ namespace Train_Reservation_Application
             }
             else
             {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseExceptionHandler("/Error");                
                 app.UseHsts();
             }
 
@@ -102,9 +103,6 @@ namespace Train_Reservation_Application
 
             app.UseSpa(spa =>
             {
-                // To learn more about options for serving an Angular SPA from ASP.NET Core,
-                // see https://go.microsoft.com/fwlink/?linkid=864501
-
                 spa.Options.SourcePath = "ClientApp";
 
                 if (env.IsDevelopment())

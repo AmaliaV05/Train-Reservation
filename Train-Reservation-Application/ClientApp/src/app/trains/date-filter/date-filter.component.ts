@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { DataService } from '../../home/data.service';
-import { Train } from '../train.model';
+import { TrainViewModel } from '../train.model';
 import { TrainsService } from '../trains.service';
 import { Subscription } from 'rxjs';
-import { FormControl, FormGroup } from '@angular/forms';
+import { DateAdapter } from '@angular/material/core';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-date-filter',
@@ -12,36 +12,30 @@ import { FormControl, FormGroup } from '@angular/forms';
 })
 export class DateFilterComponent implements OnInit, OnDestroy {
 
-  trains: Train[];
-  filterDate = new Date();
-  myDate: string;
+  trains: TrainViewModel[];
+  selectedDate: Date;
   subscription: Subscription;
-  myForm: FormGroup;
+  search = new FormControl('');
 
   constructor(private trainService: TrainsService,
-    private router: Router,
-    private data: DataService) { }
+    private dataService: DataService,
+    private _adapter: DateAdapter<Date>) {
+    this._adapter.setLocale('ro');
+  }
 
-  ngOnInit() {
-    /*this.myForm = new FormGroup({
-      'presentDate': new FormControl((new Date()).toISOString().substring(0, 10)),
-    });*/    
-    this.myDate = this.filterDate.toISOString().split('T')[0];
-    this.subscription = this.data.currentMessage.subscribe(message =>
-      this.myDate = message);
-    this.getFilteredTrains(this.myDate);    
+  ngOnInit() {    
+    this.subscription = this.dataService.currentMessage$.subscribe(message =>
+      this.selectedDate = message);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  getFilteredTrains(giveDate: string) {    
-    this.trainService.get(`Trains/filter-trains/${giveDate}`).subscribe((response: Train[]) =>
+  getTrainList() {
+    this.selectedDate = this.search.value.toISOString().split('T')[0];
+    this.trainService.getTrainList(this.selectedDate).subscribe((response: TrainViewModel[]) =>
       this.trains = response);
-  }
-
-  newMessage() {
-    this.data.getReservationDate(this.myDate);
+    this.dataService.getReservationDate(this.selectedDate);
   }
 }

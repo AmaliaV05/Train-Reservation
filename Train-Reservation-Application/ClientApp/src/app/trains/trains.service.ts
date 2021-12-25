@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { CarType, TrainViewModel, TrainWithCarsViewModel } from './train.model';
+
+const httpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+};
 
 @Injectable({
   providedIn: 'root'
@@ -12,30 +17,27 @@ export class TrainsService {
     this.apiUrl = apiUrl;
   }
 
-  get(path: string, params?: any): Observable<any> {
-    const headers = this.getHeaders();
-    return this.httpClient.get(`${this.apiUrl}${path}`, {
-      headers,
-      params: this.toHttpParams(params),
-    });
+  getTrain(path: string): Observable<TrainWithCarsViewModel> {
+    return this.httpClient.get<TrainWithCarsViewModel>(`${this.apiUrl}${path}`, httpOptions);
   }
 
-  private getHeaders() {
-    const headers = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    } as any;
-
-    return headers;
+  getTrains(path: string): Observable<TrainViewModel[]> {
+    return this.httpClient.get<TrainViewModel[]>(`${this.apiUrl}${path}`, httpOptions);
   }
 
-  private toHttpParams(params): HttpParams {
-    if (!params) {
-      return new HttpParams();
-    }
-    return Object.getOwnPropertyNames(params).reduce(
-      (p, key) => p.set(key, params[key]),
-      new HttpParams()
-    );
+  getTrainsWithMultipleSeats(path: string): Observable<number[]> {
+    return this.httpClient.get<number[]>(`${this.apiUrl}${path}`, httpOptions);
+  }
+
+  getTrainList(selectedDate: Date): Observable<TrainViewModel[]> {
+    return this.getTrains(`Trains/filter-trains/${selectedDate}`);
+  }
+
+  getTrainWithCars(idTrain: number, date: Date, carType: CarType): Observable<TrainWithCarsViewModel> {
+    return this.getTrain(`Trains/${idTrain}/${date}/filter-cars/${carType}`)
+  }
+
+  getTrainWithMultipleAvailableSeats(idTrain: number, date: Date, N: number): Observable<number[]> {
+    return this.getTrainsWithMultipleSeats(`Trains/${idTrain}/${date}/filter-cars-by-available-seats/${N}`);
   }
 }

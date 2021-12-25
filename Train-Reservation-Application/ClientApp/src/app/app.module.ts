@@ -11,20 +11,21 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { ErrorStateMatcher, MatNativeDateModule, ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
+import { DateAdapter, ErrorStateMatcher, MatNativeDateModule, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ShowOnDirtyErrorStateMatcher } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { HomeComponent } from './home/home.component';
-import { CounterComponent } from './counter/counter.component';
-import { FetchDataComponent } from './fetch-data/fetch-data.component';
-import { TrainsComponent } from './trains/trains.component';
 import { DateFilterComponent } from './trains/date-filter/date-filter.component';
 import { CarListComponent } from './trains/car-list/car-list.component';
 import { ReservationsComponent } from './reservations/reservations.component';
 import { ReservationFinishComponent } from './reservations/reservation-finish/reservation-finish.component';
 import { InputErrorStateMatcherEmail } from './reservations/reservation-finish/email/email-validation.component';
+import { SelectCarComponent } from './trains/select-car/select-car.component';
+import { MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+import { MomentUtcDateAdapter } from './trains/date-adapter.service';
+import { MultipleSeatsComponent } from './trains/multiple-seats/multiple-seats.component';
 
 
 @NgModule({
@@ -32,11 +33,10 @@ import { InputErrorStateMatcherEmail } from './reservations/reservation-finish/e
     AppComponent,
     NavMenuComponent,
     HomeComponent,
-    CounterComponent,
-    FetchDataComponent,
-    TrainsComponent,
     DateFilterComponent,
     CarListComponent,
+    SelectCarComponent,
+    MultipleSeatsComponent,
     ReservationsComponent,
     ReservationFinishComponent,
     InputErrorStateMatcherEmail
@@ -57,15 +57,19 @@ import { InputErrorStateMatcherEmail } from './reservations/reservation-finish/e
     MatCardModule,
     NgScrollbarModule,
     RouterModule.forRoot([
-    { path: '', component: HomeComponent, pathMatch: 'full' },
-    { path: 'counter', component: CounterComponent },
-    { path: 'fetch-data', component: FetchDataComponent },
-    { path: 'train/:id/available-seats', component: CarListComponent },
-    { path: 'finish-reservation', component: ReservationFinishComponent},
-], { relativeLinkResolution: 'legacy' })
+      { path: '', component: HomeComponent, pathMatch: 'full' },
+      { path: 'train/:id/available-seats', component: CarListComponent },
+      { path: 'finish-reservation', component: ReservationFinishComponent},
+    ], { relativeLinkResolution: 'legacy' })
+  ],
+  exports: [
+    MatIconModule
   ],
   providers: [
-    { provide: ErrorStateMatcher, useClass: ShowOnDirtyErrorStateMatcher }
+    { provide: ErrorStateMatcher, useClass: ShowOnDirtyErrorStateMatcher },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },
+    { provide: DateAdapter, useClass: MomentUtcDateAdapter },
   ],
   bootstrap: [AppComponent]
 })

@@ -1,52 +1,30 @@
-import { Reservation } from "../reservations/reservations.model";
-
-export class Train {
-  id: number;
-  name: string;
-  dayOfWeek: string;
-  cars: Car[];
-}
-
-export enum Type {
+export enum CarType {
   All,
   FirstClass,
   SecondClass,
   Sleeping
 }
 
-export class Car {
-  id: number;
-  carNumber: number;
-  numberOfSeats: number;
-  type: Type;
-  seats: Seat[];
+export enum DayOfWeek {
+  Sunday,
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday
 }
 
-export class Seat {
+export interface TrainViewModel {
   id: number;
-  number: number;
-  reservations: Reservation[];
-  calendars: Calendar[];
-  seatCalendars: SeatCalendar[];
-}
-
-export class SeatCalendar {
-  seat: Seat;
-  calendar: Calendar;
-  availability: string; 
-}
-
-export class Calendar {
-  id: number;
-  calendarDate: string;
-  seats: Seat[];
-  seatCalendars: SeatCalendar[];
+  name: string;
+  dayOfWeek: DayOfWeek;
 }
 
 export interface TrainWithCarsViewModel {
   id: number;
   name: string;
-  dayOfWeek: string;
+  dayOfWeek: DayOfWeek;
   cars: CarWithSeatsViewModel[];
 }
 
@@ -54,7 +32,7 @@ export interface CarWithSeatsViewModel {
   id: number;
   carNumber: number;
   numberOfSeats: number;
-  type: Type;
+  type: CarType;
   seats: SeatViewModel[];
 }
 
@@ -65,5 +43,5 @@ export interface SeatViewModel {
 }
 
 export interface SeatCalendarViewModel {
-  seatAvailability: string;
+  seatAvailability: boolean;
 }

@@ -1,0 +1,10 @@
+<div class="col-sm-6">
+  <mat-form-field appearance="fill">
+    <mat-label>Number of seats</mat-label>
+    <mat-select [(value)]="N" (selectionChange)="onChangeMultipleSeatsNumber($event)">
+      <mat-option *ngFor="let multipleSeat of multipleSeats" [value]="multipleSeat.value">
+        {{multipleSeat.text}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

@@ -50,7 +50,7 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\app\home\data.service.ts" />
-    <None Remove="ClientApp\src\app\reservations\reservation-finish\email\email-validation.component.ts" />
+    <None Remove="ClientApp\src\app\reservations\modify-reservation\modify-reservation.component.ts" />
     <None Remove="ClientApp\src\app\reservations\reservation-finish\reservation-finish.component.ts" />
     <None Remove="ClientApp\src\app\reservations\reservations.model.ts" />
     <None Remove="ClientApp\src\app\train-reservation.model.ts" />
@@ -59,10 +59,6 @@
     <None Remove="ClientApp\src\app\trains\multiple-seats\multiple-seats.component.ts" />
     <None Remove="ClientApp\src\app\trains\select-car\select-car.component.ts" />
     <None Remove="ClientApp\src\app\trains\select-seats\select-seats-number.component.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ViewModels\Reservations\" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

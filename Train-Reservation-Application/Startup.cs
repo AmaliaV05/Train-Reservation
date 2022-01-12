@@ -12,6 +12,8 @@ using System.Reflection;
 using System.IO;
 using Train_Reservation_Application.Interfaces;
 using Train_Reservation_Application.Services;
+using Train_Reservation_Application.Middlewares;
+using Train_Reservation_Application.Helpers;
 
 namespace Train_Reservation_Application
 {
@@ -65,6 +67,7 @@ namespace Train_Reservation_Application
             });
 
             services.AddScoped<ITrainsService, TrainsService>();
+            services.AddScoped<IReservationsService, ReservationsService>();
         }
 
        
@@ -73,7 +76,7 @@ namespace Train_Reservation_Application
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Train reservations");
             });
             if (env.IsDevelopment())
             {
@@ -86,6 +89,7 @@ namespace Train_Reservation_Application
             }
 
             app.UseHttpsRedirection();
+            app.UseMiddleware<CustomExceptionMiddleware>();
             app.UseStaticFiles();
             if (!env.IsDevelopment())
             {

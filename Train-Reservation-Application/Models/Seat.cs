@@ -10,5 +10,6 @@ namespace Train_Reservation_Application.Models
         public List<Reservation> Reservations { get; set; }
         public List<Calendar> Calendars { get; set; }
         public List<SeatCalendar> SeatCalendars { get; set; }
+        public List<ReservationSeat> ReservationSeats { get; set; }
     }
 }

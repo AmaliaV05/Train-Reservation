@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ModifyReservationViewModel, NewReservationRequest, ResponseService, SeatInCarViewModel, TicketViewModel } from './reservations.model';
+
+const httpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+};
 
 @Injectable({
   providedIn: 'root'
@@ -12,31 +17,19 @@ export class ReservationsService {
     this.apiUrl = apiUrl;
   }
 
-  post(path: string, body = {}): Observable<any> {
-    const headers = this.getHeaders();
-    return this.httpClient.post(
-      `${this.apiUrl}${path}`,
-      JSON.stringify(body),
-      { headers }
-    );
+  post(path: string, body = {}): Observable<ResponseService<TicketViewModel, SeatInCarViewModel[], string>> {
+    return this.httpClient.post<ResponseService<TicketViewModel, SeatInCarViewModel[], string>>(`${this.apiUrl}${path}`, JSON.stringify(body), httpOptions);
   }
 
-  private getHeaders() {
-    const headers = {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    } as any;
-
-    return headers;
+  put(path: string, body = {}): Observable<ResponseService<TicketViewModel, SeatInCarViewModel[], string>> {
+    return this.httpClient.put<ResponseService<TicketViewModel, SeatInCarViewModel[], string>>(`${this.apiUrl}${path}`, JSON.stringify(body), httpOptions);
   }
 
-  private toHttpParams(params): HttpParams {
-    if (!params) {
-      return new HttpParams();
-    }
-    return Object.getOwnPropertyNames(params).reduce(
-      (p, key) => p.set(key, params[key]),
-      new HttpParams()
-    );
+  makeReservation(newReservation: NewReservationRequest): Observable<ResponseService<TicketViewModel, SeatInCarViewModel[], string>> {
+    return this.post(`Reservations`, newReservation);
+  }
+
+  modifyReservation(reservationId: number, reservation: ModifyReservationViewModel): Observable<ResponseService<TicketViewModel, SeatInCarViewModel[], string>> {
+    return this.put(`Reservations/${reservationId}`, reservation);
   }
 }

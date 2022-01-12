@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { DataService } from '../../home/data.service';
 import { TrainViewModel } from '../train.model';
 import { TrainsService } from '../trains.service';
 import { Subscription } from 'rxjs';
 import { DateAdapter } from '@angular/material/core';
 import { FormControl } from '@angular/forms';
+import { DataService } from '../data.service';
 
 @Component({
   selector: 'app-date-filter',

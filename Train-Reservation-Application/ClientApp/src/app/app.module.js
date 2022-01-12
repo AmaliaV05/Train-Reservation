@@ -27,13 +27,12 @@ var nav_menu_component_1 = require("./nav-menu/nav-menu.component");
 var home_component_1 = require("./home/home.component");
 var date_filter_component_1 = require("./trains/date-filter/date-filter.component");
 var car_list_component_1 = require("./trains/car-list/car-list.component");
-var reservations_component_1 = require("./reservations/reservations.component");
 var reservation_finish_component_1 = require("./reservations/reservation-finish/reservation-finish.component");
-var email_validation_component_1 = require("./reservations/reservation-finish/email/email-validation.component");
 var select_car_component_1 = require("./trains/select-car/select-car.component");
 var material_moment_adapter_1 = require("@angular/material-moment-adapter");
 var date_adapter_service_1 = require("./trains/date-adapter.service");
 var multiple_seats_component_1 = require("./trains/multiple-seats/multiple-seats.component");
+var modify_reservation_component_1 = require("./reservations/modify-reservation/modify-reservation.component");
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -47,9 +46,8 @@ var AppModule = /** @class */ (function () {
                 car_list_component_1.CarListComponent,
                 select_car_component_1.SelectCarComponent,
                 multiple_seats_component_1.MultipleSeatsComponent,
-                reservations_component_1.ReservationsComponent,
                 reservation_finish_component_1.ReservationFinishComponent,
-                email_validation_component_1.InputErrorStateMatcherEmail
+                modify_reservation_component_1.ModifyReservationComponent
             ],
             imports: [
                 platform_browser_1.BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -70,6 +68,7 @@ var AppModule = /** @class */ (function () {
                     { path: '', component: home_component_1.HomeComponent, pathMatch: 'full' },
                     { path: 'train/:id/available-seats', component: car_list_component_1.CarListComponent },
                     { path: 'finish-reservation', component: reservation_finish_component_1.ReservationFinishComponent },
+                    { path: 'modify-reservation', component: modify_reservation_component_1.ModifyReservationComponent },
                 ], { relativeLinkResolution: 'legacy' })
             ],
             exports: [

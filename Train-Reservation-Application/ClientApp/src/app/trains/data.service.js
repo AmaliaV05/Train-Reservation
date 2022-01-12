@@ -16,9 +16,19 @@ var DataService = /** @class */ (function () {
     function DataService() {
         this.messageSource = new rxjs_1.BehaviorSubject(new Date);
         this.currentMessage$ = this.messageSource.asObservable();
+        this.seatListSource = new rxjs_1.BehaviorSubject(new Array());
+        this.currentSeatListMessage$ = this.seatListSource.asObservable();
+        this.modifyReservationIdSource = new rxjs_1.BehaviorSubject(0);
+        this.currentModifyReservationMessage$ = this.modifyReservationIdSource.asObservable();
     }
     DataService.prototype.getReservationDate = function (date) {
         this.messageSource.next(date);
+    };
+    DataService.prototype.getSeatsIdsList = function (list) {
+        this.seatListSource.next(list);
+    };
+    DataService.prototype.getReservationId = function (id) {
+        this.modifyReservationIdSource.next(id);
     };
     DataService = __decorate([
         (0, core_1.Injectable)({

@@ -19,21 +19,6 @@ namespace Train_Reservation_Application.Migrations
                 .HasAnnotation("ProductVersion", "5.0.10")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("ReservationSeat", b =>
-                {
-                    b.Property<int>("ReservationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SeatsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReservationId", "SeatsId");
-
-                    b.HasIndex("SeatsId");
-
-                    b.ToTable("ReservationSeat");
-                });
-
             modelBuilder.Entity("Train_Reservation_Application.Models.Calendar", b =>
                 {
                     b.Property<int>("Id")
@@ -119,6 +104,21 @@ namespace Train_Reservation_Application.Migrations
                     b.ToTable("Reservations");
                 });
 
+            modelBuilder.Entity("Train_Reservation_Application.Models.ReservationSeat", b =>
+                {
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SeatId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReservationId", "SeatId");
+
+                    b.HasIndex("SeatId");
+
+                    b.ToTable("ReservationSeat");
+                });
+
             modelBuilder.Entity("Train_Reservation_Application.Models.Seat", b =>
                 {
                     b.Property<int>("Id")
@@ -175,21 +175,6 @@ namespace Train_Reservation_Application.Migrations
                     b.ToTable("Trains");
                 });
 
-            modelBuilder.Entity("ReservationSeat", b =>
-                {
-                    b.HasOne("Train_Reservation_Application.Models.Reservation", null)
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Train_Reservation_Application.Models.Seat", null)
-                        .WithMany()
-                        .HasForeignKey("SeatsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Train_Reservation_Application.Models.Car", b =>
                 {
                     b.HasOne("Train_Reservation_Application.Models.Train", "Train")
@@ -206,6 +191,25 @@ namespace Train_Reservation_Application.Migrations
                         .HasForeignKey("CustomerId");
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Train_Reservation_Application.Models.ReservationSeat", b =>
+                {
+                    b.HasOne("Train_Reservation_Application.Models.Reservation", "Reservation")
+                        .WithMany("ReservationSeats")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Train_Reservation_Application.Models.Seat", "Seat")
+                        .WithMany("ReservationSeats")
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Reservation");
+
+                    b.Navigation("Seat");
                 });
 
             modelBuilder.Entity("Train_Reservation_Application.Models.Seat", b =>
@@ -251,8 +255,15 @@ namespace Train_Reservation_Application.Migrations
                     b.Navigation("Reservations");
                 });
 
+            modelBuilder.Entity("Train_Reservation_Application.Models.Reservation", b =>
+                {
+                    b.Navigation("ReservationSeats");
+                });
+
             modelBuilder.Entity("Train_Reservation_Application.Models.Seat", b =>
                 {
+                    b.Navigation("ReservationSeats");
+
                     b.Navigation("SeatCalendars");
                 });
 

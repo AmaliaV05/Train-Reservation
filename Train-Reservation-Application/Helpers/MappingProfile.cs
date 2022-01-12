@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Train_Reservation_Application.Models;
-using Train_Reservation_Application.ViewModels;
+using Train_Reservation_Application.ViewModels.Reservations.Ticket;
 using Train_Reservation_Application.ViewModels.Trains;
 
-namespace Train_Reservation_Application
+namespace Train_Reservation_Application.Helpers
 {
     public class MappingProfile : Profile
     {
@@ -15,14 +15,11 @@ namespace Train_Reservation_Application
             CreateMap<Car, CarWithSeatsViewModel>();
             CreateMap<Seat, SeatViewModel>();
             CreateMap<SeatCalendar, SeatCalendarViewModel>();
-            CreateMap<Calendar, CalendarViewModel>();
 
-            CreateMap<Reservation, ReservedSeatsViewModel>();
-            CreateMap<Customer, NewReservationRequestViewModel>();
-
-            CreateMap<Customer, OldCustomerReservationViewModel>();
-            CreateMap<Reservation, ReservationWithSeatsViewModel>();
-            CreateMap<Reservation, ModifyReservationViewModel>();           
+            CreateMap<Customer, TicketViewModel>();
+            CreateMap<Reservation, ReservationViewModel>();
+            CreateMap<Seat, SeatInCarViewModel>();
+            CreateMap<Car, CarInTrainViewModel>();
         }
     }
 }

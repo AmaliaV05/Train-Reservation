@@ -1,6 +1,6 @@
-﻿namespace Train_Reservation_Application.ViewModels
+﻿namespace Train_Reservation_Application.ViewModels.Reservations.Ticket
 {
-    public class SeatsInCarViewModel
+    public class SeatInCarViewModel
     {
         public int Id { get; set; }
         public int Number { get; set; }

@@ -1,9 +1,14 @@
-import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { DataService } from '../../home/data.service';
-import { CarType, DayOfWeek, TrainWithCarsViewModel } from '../train.model';
+import { DataService } from '../data.service';
+import { CarType, CarWithSeatsViewModel, SeatViewModel, TrainWithCarsViewModel } from '../train.model';
 import { TrainsService } from '../trains.service';
+
+class SelectedSeatsView {
+  car: number;
+  seat: number;
+}
 
 @Component({
   selector: 'app-car-list',
@@ -13,18 +18,33 @@ export class CarListComponent implements OnInit, OnDestroy {
   selectedTrain: TrainWithCarsViewModel = {
     id: 0,
     name: '',
-    dayOfWeek: DayOfWeek.Sunday,
-    cars: []
+    cars: [{
+      id: 0,
+      carNumber: 0,
+      numberOfSeats: 0,
+      type: CarType.All,
+      seats: [{
+        id: 0,
+        number: 0,
+        seatCalendars: [{
+          seatAvailability: false
+        }]
+      }]
+    }]
   };
   idTrain: number;
   selectedCarType = CarType.All;
   N = 1;
-  reserveSeats = new Array<any>();
-  reserveButton = true;
   selectedDate: Date;
   seats: number[];
   disabled: boolean;
+  reserveSeatsView = new Array<SelectedSeatsView>();
+  reserveSeatView: SelectedSeatsView = { car: 0, seat: 0 };
+  reserveSeatsIds = new Array<number>();
+  reserveButton = true;
+  message: string;
   subscription: Subscription;
+  seatsListSubscription: Subscription;
 
   constructor(private trainService: TrainsService,
     private route: ActivatedRoute,
@@ -34,12 +54,15 @@ export class CarListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscription = this.dataService.currentMessage$.subscribe(message =>
       this.selectedDate = message);
+    this.seatsListSubscription = this.dataService.currentSeatListMessage$.subscribe(message =>
+      this.reserveSeatsIds = message);
     this.idTrain = this.route.snapshot.params['id'];
     this.getSelectedTrain();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    this.seatsListSubscription.unsubscribe();
   }
 
   getSelectedTrain() {
@@ -53,6 +76,10 @@ export class CarListComponent implements OnInit, OnDestroy {
     this.selectedTrain = item;
   }
 
+  getSelectedCarType(item: CarType) {
+    this.selectedCarType = item;
+  }
+
   getSelectedMultipleSeatsNumber(item: number) {
     this.N = item;
   }
@@ -63,17 +90,37 @@ export class CarListComponent implements OnInit, OnDestroy {
 
   checkMultipleSeats(id: number) {
     this.disabled = !this.seats.includes(id);
-    return {'background-color': this.seats.includes(id) ? 'blue' : 'white'};
+    return { 'background-color': this.seats.includes(id) ? '#00E828' : 'red'};
   }
 
-  addSeat(seat: any) {
-    if (this.selectedCarType !== CarType.All) {
-      this.reserveSeats.push(seat);
+  addSeat(car: CarWithSeatsViewModel, seat: SeatViewModel) {
+    if (this.selectedCarType != CarType.All && !this.reserveSeatsIds.includes(seat.id)) {
+      this.reserveSeatView.car = car.carNumber;
+      this.reserveSeatView.seat = seat.number;
+      this.reserveSeatsView.push(this.reserveSeatView);
+      this.reserveSeatView = { car: 0, seat: 0 };
+      this.reserveSeatsIds.push(seat.id);
       this.reserveButton = false;
-    }     
+    }
+    else
+      if (this.reserveSeatsIds.includes(seat.id)) {
+        for (var i = 0; i < this.reserveSeatsIds.length; i++) {
+          if (this.reserveSeatsIds[i] === seat.id) {
+            this.reserveSeatsIds.splice(i, 1);
+            this.reserveSeatsView.splice(i, 1);
+            break;
+          }
+        }
+      }
   }
 
   goToFinishReservation() {
-    this.router.navigateByUrl('finish-reservation')
+    if (this.reserveSeatsView.length === 0) {
+      this.message = 'Please select at least one seat!';
+    }
+    else {
+      this.dataService.getSeatsIdsList(this.reserveSeatsIds);
+      this.router.navigateByUrl('finish-reservation');
+    }    
   }
 }

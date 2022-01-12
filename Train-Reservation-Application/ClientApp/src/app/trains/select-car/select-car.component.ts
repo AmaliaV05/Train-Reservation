@@ -24,6 +24,7 @@ export class SelectCarComponent {
   @Input() idTrain: number;
   @Input() selectedDate: Date;
   @Output() filteredCarsByType = new EventEmitter<TrainWithCarsViewModel>();
+  @Output() selectCarType = new EventEmitter<CarType>();
 
   constructor(private trainService: TrainsService) { }
 
@@ -33,6 +34,7 @@ export class SelectCarComponent {
       .subscribe((response: TrainWithCarsViewModel) => {
         this.filteredCars = response;
         this.filteredCarsByType.emit(this.filteredCars);
+        this.selectCarType.emit(this.selectedCarType);
       });
   }
 }

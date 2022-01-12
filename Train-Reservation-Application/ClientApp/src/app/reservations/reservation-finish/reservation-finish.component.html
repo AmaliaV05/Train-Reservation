@@ -1,25 +1,60 @@
-<form class="example-form">
-  <mat-form-field appearance="fill">
-    <mat-label>Social Security Number</mat-label>
-    <input matInput>
-  </mat-form-field>
-  <br />
-  <mat-form-field appearance="fill">
-    <mat-label>Name, First name</mat-label>
-    <input matInput>
-  </mat-form-field>
-  <br />
-  <input-error-state-matcher-email></input-error-state-matcher-email>
-  <br />
-  <mat-form-field appearance="fill">
-    <mat-label>Date</mat-label>
-    <input matInput>
-  </mat-form-field>
-  <br />
-</form>
-  
-  
-  <button class="btn btn-primary" (click)="postReservation()">Finish reservation</button>
-  {{ reservationDate }}
-
-  <mat-label *ngIf="code">To modify your reservation you will need the following code: {{ code }}</mat-label>
+<div *ngIf="!showTicket; else response">
+  <form class="reservation-finish" [formGroup]="reservationForm" (ngSubmit)="postReservation()">
+    <mat-form-field appearance="fill">
+      <mat-label>Social Security Number</mat-label>
+      <input matInput type="text" formControlName="socialSecurityNumber" required>
+    </mat-form-field>
+    <br />
+    <mat-form-field appearance="fill">
+      <mat-label>Name</mat-label>
+      <input matInput type="text" formControlName="name" required>
+    </mat-form-field>
+    <br />
+    <mat-form-field appearance="fill">
+      <mat-label>Email</mat-label>
+      <input type="email" id="email" matInput formControlName="email" [errorStateMatcher]="matcher"
+             placeholder="Ex. pat@example.com" required>
+      <span matSuffix><mat-icon matSufix class="invalid-email" style="color: red" *ngIf="reservationForm.get('email').hasError('email') && !reservationForm.get('email').hasError('required')">error_outline</mat-icon></span>
+      <mat-error *ngIf="reservationForm.get('email').hasError('email') && !reservationForm.get('email').hasError('required')">
+        Please enter a valid email address
+      </mat-error>
+      <mat-error *ngIf="reservationForm.get('email').hasError('required')">
+        Email is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+    <br />
+    <button mat-raised-button color="primary" type="submit" [disabled]="!reservationForm.valid">Finish reservation</button>
+  </form>
+</div>
+<ng-template #response>
+  <div class="ticket" *ngIf="ticket; else occupiedSeatsView">
+    <mat-card>
+      <mat-card-title>Reservation for {{ ticket.name }}</mat-card-title>
+      <mat-card-subtitle>Cluj-Bucharest</mat-card-subtitle>
+      <mat-card-content>
+        <p>{{ ticket.reservations[0].reservationDate | date:'mediumDate' }}</p>
+      </mat-card-content>
+      <div *ngFor="let seat of ticket.reservations[0].seats">
+        <mat-card>
+          <mat-card-subtitle>Train {{ seat.car.train.name }}</mat-card-subtitle>
+          <p>Car No. {{ seat.car.carNumber }}, Seat No. {{ seat.number }}</p>
+        </mat-card><br />
+      </div>
+    </mat-card>
+    <p>To modify your reservation you will need the following code: {{ ticket.reservations[0].code }}</p>
+    {{ message }}
+    <button mat-raised-button color="primary" (click)="goToModifyReservation()">Modify reservation</button>
+  </div>
+  <ng-template #occupiedSeatsView>
+    <div *ngIf="!occupiedSeats">{{ message }}</div>
+    <div *ngIf="occupiedSeats">
+      <div *ngFor="let seat of occupiedSeats">
+        <mat-card>
+          <mat-card-subtitle>Train {{ seat.car.train.name }}</mat-card-subtitle>
+          <p>Car No. {{ seat.car.carNumber }}, Seat No. {{ seat.number }}</p>
+        </mat-card><br />
+      </div>
+      {{ message }}
+    </div>    
+  </ng-template>  
+</ng-template>

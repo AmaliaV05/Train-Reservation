@@ -19,13 +19,12 @@ import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { HomeComponent } from './home/home.component';
 import { DateFilterComponent } from './trains/date-filter/date-filter.component';
 import { CarListComponent } from './trains/car-list/car-list.component';
-import { ReservationsComponent } from './reservations/reservations.component';
 import { ReservationFinishComponent } from './reservations/reservation-finish/reservation-finish.component';
-import { InputErrorStateMatcherEmail } from './reservations/reservation-finish/email/email-validation.component';
 import { SelectCarComponent } from './trains/select-car/select-car.component';
 import { MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 import { MomentUtcDateAdapter } from './trains/date-adapter.service';
 import { MultipleSeatsComponent } from './trains/multiple-seats/multiple-seats.component';
+import { ModifyReservationComponent } from './reservations/modify-reservation/modify-reservation.component';
 
 
 @NgModule({
@@ -36,10 +35,9 @@ import { MultipleSeatsComponent } from './trains/multiple-seats/multiple-seats.c
     DateFilterComponent,
     CarListComponent,
     SelectCarComponent,
-    MultipleSeatsComponent,
-    ReservationsComponent,
+    MultipleSeatsComponent,    
     ReservationFinishComponent,
-    InputErrorStateMatcherEmail
+    ModifyReservationComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -59,7 +57,8 @@ import { MultipleSeatsComponent } from './trains/multiple-seats/multiple-seats.c
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'train/:id/available-seats', component: CarListComponent },
-      { path: 'finish-reservation', component: ReservationFinishComponent},
+      { path: 'finish-reservation', component: ReservationFinishComponent },
+      { path: 'modify-reservation', component: ModifyReservationComponent },
     ], { relativeLinkResolution: 'legacy' })
   ],
   exports: [

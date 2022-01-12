@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Train_Reservation_Application.ViewModels
+namespace Train_Reservation_Application.ViewModels.Reservations
 {
     public class ModifyReservationViewModel
     {

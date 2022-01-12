@@ -2,6 +2,7 @@
   <div class="col-7">
     <div class="form-group row">
       <app-select-car (filteredCarsByType)="getFilteredCars($event)"
+                      (selectCarType)="getSelectedCarType($event)"
                       [idTrain]="idTrain"
                       [selectedDate]="selectedDate">
       </app-select-car>
@@ -19,8 +20,8 @@
           Car No. {{ car.carNumber }} <br />
           <div class="d-inline" *ngFor="let seat of car.seats">
             <button class="border" mat-raised-button
-                    [ngStyle]="checkMultipleSeats(seat.id)"                     
-                    (click)="addSeat(seat)"
+                    [ngStyle]="checkMultipleSeats(seat.id)"
+                    (click)="addSeat(car, seat)" 
                     [disabled]="disabled">
               {{ seat.number }}
             </button>
@@ -37,8 +38,8 @@
             <div class="d-inline" *ngFor="let calendar of seat.seatCalendars">
               <button class="border" mat-raised-button
                       [calendar]="calendar"
-                      [style.background-color]="!calendar.seatAvailability ? '#00E828': 'red'"
-                      (click)="addSeat(seat)"
+                      [style.background-color]="!calendar.seatAvailability ? '#00E828': 'red'" 
+                      (click)="addSeat(car, seat)" 
                       [disabled]="calendar.seatAvailability">
                 {{ seat.number }}
               </button>
@@ -49,18 +50,19 @@
     </ng-template>
   </div>
   <div class="col-5">
-    <div class="card" *ngIf="reserveSeats && selectedCarType !== 0">
-      <h5 class="card-title" *ngIf="reserveSeats && selectedCarType !== 0">You have chosen:</h5>
-      <div class="card-body" *ngFor="let seat of reserveSeats">
-        Seat No. {{ seat.number }}
+    <div class="card" *ngIf="reserveSeatsView && selectedCarType !== 0">
+      <h5 class="card-title" *ngIf="reserveSeatsView && selectedCarType !== 0">You have chosen:</h5>
+      <div class="card-body" *ngFor="let reserve of reserveSeatsView">
+        Car No. {{ reserve.car }} - Seat No. {{ reserve.seat }}
       </div>
     </div>
     <div class="container">
-      <button class="btn btn-primary" *ngIf="reserveSeats && selectedCarType !== 0"
+      <button class="btn btn-primary" *ngIf="reserveSeatsView && selectedCarType !== 0"
               [disabled]="reserveButton"
               (click)="goToFinishReservation()">
         Reserve now
       </button>
-    </div>    
+    </div>
+    <div *ngIf="message">{{ message }}</div>
   </div>
 </div>

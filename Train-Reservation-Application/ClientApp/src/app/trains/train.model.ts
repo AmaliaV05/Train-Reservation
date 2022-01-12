@@ -5,26 +5,14 @@ export enum CarType {
   Sleeping
 }
 
-export enum DayOfWeek {
-  Sunday,
-  Monday,
-  Tuesday,
-  Wednesday,
-  Thursday,
-  Friday,
-  Saturday
-}
-
 export interface TrainViewModel {
   id: number;
   name: string;
-  dayOfWeek: DayOfWeek;
 }
 
 export interface TrainWithCarsViewModel {
   id: number;
   name: string;
-  dayOfWeek: DayOfWeek;
   cars: CarWithSeatsViewModel[];
 }
 

@@ -1,0 +1,40 @@
+<div *ngIf="!showTicket; else response">
+  <form #modifyReservationForm="ngForm" class="modify-reservation" (ngSubmit)="modifyReservation()">
+    <mat-form-field appearance="fill">
+      <mat-label>Code</mat-label>
+      <input matInput type="text" [formControl]="code" required>
+    </mat-form-field>    
+    <br />
+    <button mat-raised-button color="primary" type="submit">Finish reservation</button>
+  </form>
+</div>
+<ng-template #response>
+  <div class="ticket" *ngIf="ticket; else occupiedSeatsView">
+    <mat-card>
+      <mat-card-title>Reservation for {{ ticket.name }}</mat-card-title>
+      <mat-card-subtitle>Cluj-Bucharest</mat-card-subtitle>
+      <mat-card-content>
+        <p>{{ ticket.reservations[0].reservationDate | date:'mediumDate' }}</p>
+      </mat-card-content>
+      <div *ngFor="let seat of ticket.reservations[0].seats">
+        <mat-card>
+          <mat-card-subtitle>Train {{ seat.car.train.name }}</mat-card-subtitle>
+          <p>Car No. {{ seat.car.carNumber }}, Seat No. {{ seat.number }}</p>
+        </mat-card><br />
+      </div>
+    </mat-card>    
+    {{ message }}
+  </div>
+  <ng-template #occupiedSeatsView>
+    <div *ngIf="!occupiedSeats">{{ message }}</div>
+    <div *ngIf="occupiedSeats">
+      <div *ngFor="let seat of occupiedSeats">
+        <mat-card>
+          <mat-card-subtitle>Train {{ seat.car.train.name }}</mat-card-subtitle>
+          <p>Car No. {{ seat.car.carNumber }}, Seat No. {{ seat.number }}</p>
+        </mat-card><br />
+      </div>
+      {{ message }}
+    </div>
+  </ng-template>
+</ng-template>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Train_Reservation_Application.Models
 {
@@ -10,5 +11,6 @@ namespace Train_Reservation_Application.Models
         public DateTime ReservationDate { get; set; }
         public List<Seat> Seats { get; set; }
         public Customer Customer { get; set; }
+        public List<ReservationSeat> ReservationSeats { get; set; }
     }
 }

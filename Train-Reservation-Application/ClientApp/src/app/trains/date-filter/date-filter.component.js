@@ -11,10 +11,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DateFilterComponent = void 0;
 var core_1 = require("@angular/core");
-var data_service_1 = require("../../home/data.service");
 var trains_service_1 = require("../trains.service");
 var core_2 = require("@angular/material/core");
 var forms_1 = require("@angular/forms");
+var data_service_1 = require("../data.service");
 var DateFilterComponent = /** @class */ (function () {
     function DateFilterComponent(trainService, dataService, _adapter) {
         this.trainService = trainService;

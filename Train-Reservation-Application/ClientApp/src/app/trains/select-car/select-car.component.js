@@ -22,6 +22,7 @@ var SelectCarComponent = /** @class */ (function () {
             { value: train_model_1.CarType.Sleeping, text: 'Sleeping' }
         ];
         this.filteredCarsByType = new core_1.EventEmitter();
+        this.selectCarType = new core_1.EventEmitter();
     }
     SelectCarComponent.prototype.onChangeFilteredCars = function (option) {
         var _this = this;
@@ -30,6 +31,7 @@ var SelectCarComponent = /** @class */ (function () {
             .subscribe(function (response) {
             _this.filteredCars = response;
             _this.filteredCarsByType.emit(_this.filteredCars);
+            _this.selectCarType.emit(_this.selectedCarType);
         });
     };
     __decorate([
@@ -44,6 +46,10 @@ var SelectCarComponent = /** @class */ (function () {
         (0, core_1.Output)(),
         __metadata("design:type", Object)
     ], SelectCarComponent.prototype, "filteredCarsByType", void 0);
+    __decorate([
+        (0, core_1.Output)(),
+        __metadata("design:type", Object)
+    ], SelectCarComponent.prototype, "selectCarType", void 0);
     SelectCarComponent = __decorate([
         (0, core_1.Component)({
             selector: 'app-select-car',

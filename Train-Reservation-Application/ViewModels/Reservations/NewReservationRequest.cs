@@ -1,6 +1,6 @@
-﻿namespace Train_Reservation_Application.ViewModels
+﻿namespace Train_Reservation_Application.ViewModels.Reservations
 {
-    public class NewReservationRequestViewModel
+    public class NewReservationRequest
     {
         public string SocialSecurityNumber { get; set; }
         public string Name { get; set; }

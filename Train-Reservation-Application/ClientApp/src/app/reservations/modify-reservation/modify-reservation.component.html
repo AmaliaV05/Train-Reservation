@@ -3,6 +3,21 @@
     <mat-form-field appearance="fill">
       <mat-label>Code</mat-label>
       <input matInput type="text" [formControl]="code" required>
+      <span matSuffix>
+        <mat-icon matSufix class="invalid-code" style="color: red"
+                  *ngIf="code.hasError('minlength') &&
+                                !code.hasError('required') ||
+                                code.hasError('maxlength')">
+          error_outline
+        </mat-icon>
+      </span>
+      <mat-error *ngIf="code.errors?.['required']">
+        Code is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="code.errors?.['minlength']
+                 || code.errors?.['maxlength']">
+        Code must have <strong>7 digits</strong>
+      </mat-error>
     </mat-form-field>    
     <br />
     <button mat-raised-button color="primary" type="submit">Finish reservation</button>

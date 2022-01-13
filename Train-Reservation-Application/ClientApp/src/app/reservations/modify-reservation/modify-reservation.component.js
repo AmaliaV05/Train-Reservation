@@ -25,7 +25,7 @@ var ModifyReservationComponent = /** @class */ (function () {
             reservationDate: new Date,
             reservedSeatsIds: new Array()
         };
-        this.code = new forms_1.FormControl('', forms_1.Validators.required);
+        this.code = new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(7), forms_1.Validators.maxLength(7)]);
         this.reserveSeatsIds = new Array();
         this.ticket = {
             name: '',

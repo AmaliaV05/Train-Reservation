@@ -67,8 +67,8 @@ export class ReservationFinishComponent implements OnInit, OnDestroy {
   }];
 
   reservationForm = new FormGroup({
-    socialSecurityNumber: new FormControl('', Validators.required),
-    name: new FormControl('', Validators.required),
+    socialSecurityNumber: new FormControl('', [Validators.required, Validators.minLength(13), Validators.maxLength(13)]),
+    name: new FormControl('', [Validators.required, Validators.minLength(10)]),
     email: new FormControl('', [Validators.required, Validators.email])
   });
 

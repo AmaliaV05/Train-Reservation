@@ -75,8 +75,8 @@ var ReservationFinishComponent = /** @class */ (function () {
                 }
             }];
         this.reservationForm = new forms_1.FormGroup({
-            socialSecurityNumber: new forms_1.FormControl('', forms_1.Validators.required),
-            name: new forms_1.FormControl('', forms_1.Validators.required),
+            socialSecurityNumber: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(13), forms_1.Validators.maxLength(13)]),
+            name: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(10)]),
             email: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.email])
         });
         this.matcher = new MyErrorStateMatcher();

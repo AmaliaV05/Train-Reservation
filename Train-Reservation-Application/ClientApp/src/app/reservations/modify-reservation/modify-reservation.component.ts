@@ -17,7 +17,7 @@ export class ModifyReservationComponent {
     reservationDate: new Date,
     reservedSeatsIds: new Array<number>()
   };
-  code = new FormControl('', Validators.required);
+  code = new FormControl('', [Validators.required, Validators.minLength(7), Validators.maxLength(7)]);
   selectedDate: Date;
   reserveSeatsIds = new Array<number>();
   reservationId: number;

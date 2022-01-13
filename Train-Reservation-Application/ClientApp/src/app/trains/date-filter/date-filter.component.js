@@ -22,6 +22,7 @@ var DateFilterComponent = /** @class */ (function () {
         this._adapter = _adapter;
         this.search = new forms_1.FormControl('');
         this._adapter.setLocale('ro');
+        this.minDate = new Date();
     }
     DateFilterComponent.prototype.ngOnInit = function () {
         var _this = this;

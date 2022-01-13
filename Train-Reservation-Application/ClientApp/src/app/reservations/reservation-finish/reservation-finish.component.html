@@ -2,21 +2,54 @@
   <form class="reservation-finish" [formGroup]="reservationForm" (ngSubmit)="postReservation()">
     <mat-form-field appearance="fill">
       <mat-label>Social Security Number</mat-label>
-      <input matInput type="text" formControlName="socialSecurityNumber" required>
-    </mat-form-field>
+      <input matInput type="text" id="name" formControlName="socialSecurityNumber" required>
+      <span matSuffix>
+        <mat-icon matSufix class="invalid-socialSecurityNumber" style="color: red"
+                                *ngIf="reservationForm.get('socialSecurityNumber').hasError('minlength') &&
+                                !reservationForm.get('socialSecurityNumber').hasError('required') ||
+                                reservationForm.get('socialSecurityNumber').hasError('maxlength')">error_outline
+        </mat-icon>
+      </span>
+      <mat-error *ngIf="reservationForm.get('socialSecurityNumber').errors?.['required']">
+        Social security number is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="reservationForm.get('socialSecurityNumber').errors?.['minlength']
+                 || reservationForm.get('socialSecurityNumber').errors?.['maxlength']">
+        Social security number must have <strong>13 digits</strong>
+      </mat-error>
+    </mat-form-field>    
     <br />
     <mat-form-field appearance="fill">
       <mat-label>Name</mat-label>
       <input matInput type="text" formControlName="name" required>
+      <span matSuffix>
+        <mat-icon matSufix class="invalid-name" style="color: red"
+                  *ngIf="reservationForm.get('name').hasError('minlength') &&
+                  !reservationForm.get('name').hasError('required')">
+          error_outline
+        </mat-icon>
+      </span>
+      <mat-error *ngIf="reservationForm.get('name').errors?.['minlength']">
+        Name must have at least <strong>10 characters</strong>
+      </mat-error>
+      <mat-error *ngIf="reservationForm.get('name').errors?.['required']">
+        Name is <strong>required</strong>
+      </mat-error>
     </mat-form-field>
     <br />
     <mat-form-field appearance="fill">
       <mat-label>Email</mat-label>
       <input type="email" id="email" matInput formControlName="email" [errorStateMatcher]="matcher"
              placeholder="Ex. pat@example.com" required>
-      <span matSuffix><mat-icon matSufix class="invalid-email" style="color: red" *ngIf="reservationForm.get('email').hasError('email') && !reservationForm.get('email').hasError('required')">error_outline</mat-icon></span>
-      <mat-error *ngIf="reservationForm.get('email').hasError('email') && !reservationForm.get('email').hasError('required')">
-        Please enter a valid email address
+      <span matSuffix>
+        <mat-icon matSufix class="invalid-email" style="color: red"
+                  *ngIf="reservationForm.get('email').hasError('email') &&
+                  !reservationForm.get('email').hasError('required')">error_outline
+          </mat-icon>
+      </span>
+      <mat-error *ngIf="reservationForm.get('email').hasError('email') &&
+                 !reservationForm.get('email').hasError('required')">
+        Please enter a valid input
       </mat-error>
       <mat-error *ngIf="reservationForm.get('email').hasError('required')">
         Email is <strong>required</strong>

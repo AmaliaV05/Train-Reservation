@@ -14,6 +14,10 @@ using Train_Reservation_Application.Interfaces;
 using Train_Reservation_Application.Services;
 using Train_Reservation_Application.Middlewares;
 using Train_Reservation_Application.Helpers;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using Train_Reservation_Application.ViewModels.Reservations;
+using Train_Reservation_Application.Validators;
 
 namespace Train_Reservation_Application
 {
@@ -35,6 +39,7 @@ namespace Train_Reservation_Application
                     Configuration.GetConnectionString("DefaultConnection")));
             
             services.AddControllers()
+                .AddFluentValidation()
                 .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
            
             services.AddSpaStaticFiles(configuration =>
@@ -68,6 +73,8 @@ namespace Train_Reservation_Application
 
             services.AddScoped<ITrainsService, TrainsService>();
             services.AddScoped<IReservationsService, ReservationsService>();
+            services.AddTransient<IValidator<NewReservationRequest>, NewReservationRequestValidator>();
+            services.AddTransient<IValidator<ModifyReservationViewModel>, ModifyReservationValidator>();
         }
 
        

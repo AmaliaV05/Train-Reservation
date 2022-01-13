@@ -16,11 +16,13 @@ export class DateFilterComponent implements OnInit, OnDestroy {
   selectedDate: Date;
   subscription: Subscription;
   search = new FormControl('');
+  minDate: Date;
 
   constructor(private trainService: TrainsService,
     private dataService: DataService,
     private _adapter: DateAdapter<Date>) {
     this._adapter.setLocale('ro');
+    this.minDate = new Date();
   }
 
   ngOnInit() {    

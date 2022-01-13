@@ -2,7 +2,7 @@
   <div class="row">
     <form #searchForm="ngForm" (ngSubmit)="getTrainList()">
       <mat-form-field appearance="outline">
-        <input matInput [matDatepicker]="picker" [formControl]="search" name="selecteddate">
+        <input matInput [min]="minDate" [matDatepicker]="picker" [formControl]="search" name="selecteddate">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>

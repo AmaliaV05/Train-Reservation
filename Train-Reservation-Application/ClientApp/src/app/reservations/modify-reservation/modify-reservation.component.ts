@@ -17,7 +17,7 @@ export class ModifyReservationComponent {
     reservationDate: new Date,
     reservedSeatsIds: new Array<number>()
   };
-  code = new FormControl('', [Validators.required, Validators.minLength(7), Validators.maxLength(7)]);
+  code: FormControl;
   selectedDate: Date;
   reserveSeatsIds = new Array<number>();
   reservationId: number;
@@ -73,6 +73,7 @@ export class ModifyReservationComponent {
       this.reserveSeatsIds = message);
     this.reservationIdSubscription = this.dataService.currentModifyReservationMessage$.subscribe(message =>
       this.reservationId = message);
+    this.code = new FormControl('', [Validators.required, Validators.minLength(7), Validators.maxLength(7)]);
   }
 
   ngOnDestroy() {

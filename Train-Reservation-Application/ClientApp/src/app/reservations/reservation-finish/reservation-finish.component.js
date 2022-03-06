@@ -9,23 +9,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReservationFinishComponent = exports.MyErrorStateMatcher = void 0;
+exports.ReservationFinishComponent = exports.EmailErrorStateMatcher = void 0;
 var core_1 = require("@angular/core");
 var reservations_service_1 = require("../reservations.service");
 var data_service_1 = require("../../trains/data.service");
 var train_model_1 = require("../../trains/train.model");
 var forms_1 = require("@angular/forms");
 var router_1 = require("@angular/router");
-var MyErrorStateMatcher = /** @class */ (function () {
-    function MyErrorStateMatcher() {
+var EmailErrorStateMatcher = /** @class */ (function () {
+    function EmailErrorStateMatcher() {
     }
-    MyErrorStateMatcher.prototype.isErrorState = function (control, form) {
+    EmailErrorStateMatcher.prototype.isErrorState = function (control, form) {
         var isSubmitted = form && form.submitted;
         return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
     };
-    return MyErrorStateMatcher;
+    return EmailErrorStateMatcher;
 }());
-exports.MyErrorStateMatcher = MyErrorStateMatcher;
+exports.EmailErrorStateMatcher = EmailErrorStateMatcher;
 var ReservationFinishComponent = /** @class */ (function () {
     function ReservationFinishComponent(reservationService, dataService, router) {
         this.reservationService = reservationService;
@@ -74,12 +74,7 @@ var ReservationFinishComponent = /** @class */ (function () {
                     }
                 }
             }];
-        this.reservationForm = new forms_1.FormGroup({
-            socialSecurityNumber: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(13), forms_1.Validators.maxLength(13)]),
-            name: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(10)]),
-            email: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.email])
-        });
-        this.matcher = new MyErrorStateMatcher();
+        this.matcher = new EmailErrorStateMatcher();
         this.showTicket = false;
         this.reserveSeatsIds = new Array();
     }
@@ -94,10 +89,16 @@ var ReservationFinishComponent = /** @class */ (function () {
         this.reservationIdSubscription = this.dataService.currentModifyReservationMessage$.subscribe(function (message) {
             return _this.reservationId = message;
         });
+        this.reservationForm = new forms_1.FormGroup({
+            socialSecurityNumber: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(13), forms_1.Validators.maxLength(13)]),
+            name: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.minLength(10)]),
+            email: new forms_1.FormControl('', [forms_1.Validators.required, forms_1.Validators.email])
+        });
     };
     ReservationFinishComponent.prototype.ngOnDestroy = function () {
         this.subscription.unsubscribe();
         this.seatsListSubscription.unsubscribe();
+        this.reservationIdSubscription.unsubscribe();
     };
     ReservationFinishComponent.prototype.postReservation = function () {
         var _this = this;

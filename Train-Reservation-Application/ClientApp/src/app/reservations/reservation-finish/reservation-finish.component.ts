@@ -8,7 +8,7 @@ import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '
 import { ErrorStateMatcher } from '@angular/material/core/error/error-options';
 import { Router } from '@angular/router';
 
-export class MyErrorStateMatcher implements ErrorStateMatcher {
+export class EmailErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
     const isSubmitted = form && form.submitted;
     return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
@@ -65,14 +65,9 @@ export class ReservationFinishComponent implements OnInit, OnDestroy {
       }
     }
   }];
-
-  reservationForm = new FormGroup({
-    socialSecurityNumber: new FormControl('', [Validators.required, Validators.minLength(13), Validators.maxLength(13)]),
-    name: new FormControl('', [Validators.required, Validators.minLength(10)]),
-    email: new FormControl('', [Validators.required, Validators.email])
-  });
-
-  matcher = new MyErrorStateMatcher();
+  
+  reservationForm: FormGroup;
+  matcher = new EmailErrorStateMatcher();
   showTicket = false;
   message: string;
   reservationDate: Date;
@@ -93,11 +88,17 @@ export class ReservationFinishComponent implements OnInit, OnDestroy {
       this.reserveSeatsIds = message);
     this.reservationIdSubscription = this.dataService.currentModifyReservationMessage$.subscribe(message =>
       this.reservationId = message);
+    this.reservationForm = new FormGroup({
+      socialSecurityNumber: new FormControl('', [Validators.required, Validators.minLength(13), Validators.maxLength(13)]),
+      name: new FormControl('', [Validators.required, Validators.minLength(10)]),
+      email: new FormControl('', [Validators.required, Validators.email])
+    });
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.seatsListSubscription.unsubscribe();
+    this.reservationIdSubscription.unsubscribe();
   }
 
   postReservation() {

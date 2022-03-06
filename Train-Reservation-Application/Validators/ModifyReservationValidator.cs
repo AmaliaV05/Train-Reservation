@@ -8,7 +8,7 @@ namespace Train_Reservation_Application.Validators
     {
         public ModifyReservationValidator()
         {
-            RuleFor(x => x.Code).NotNull().MinimumLength(7).MaximumLength(7);
+            RuleFor(x => x.Code).NotNull().Length(7, 7);
             RuleFor(x => x.ReservationDate).Must(BeAValidDate).WithMessage("Reservation date cannot be prior to today's date");
             RuleFor(x => x.ReservedSeatsIds).NotEmpty();
         }

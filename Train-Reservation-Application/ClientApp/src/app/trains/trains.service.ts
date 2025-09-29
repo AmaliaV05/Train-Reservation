@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CarType, TrainViewModel, TrainWithCarsViewModel } from './train.model';
+import { TrainViewModel, TrainWithCarsViewModel } from './train.model';
+import { CarType } from './enums';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -29,15 +30,15 @@ export class TrainsService {
     return this.httpClient.get<number[]>(`${this.apiUrl}${path}`, httpOptions);
   }
 
-  getTrainList(selectedDate: Date): Observable<TrainViewModel[]> {
+  getTrainList(selectedDate: string): Observable<TrainViewModel[]> {
     return this.getTrains(`Trains/filter-trains/${selectedDate}`);
   }
 
-  getTrainWithCars(idTrain: number, date: Date, carType: CarType): Observable<TrainWithCarsViewModel> {
+  getTrainWithCars(idTrain: number, date: string, carType: CarType): Observable<TrainWithCarsViewModel> {
     return this.getTrain(`Trains/${idTrain}/${date}/filter-cars/${carType}`)
   }
 
-  getTrainWithMultipleAvailableSeats(idTrain: number, date: Date, N: number): Observable<number[]> {
+  getTrainWithMultipleAvailableSeats(idTrain: number, date: string, N: number): Observable<number[]> {
     return this.getTrainsWithMultipleSeats(`Trains/${idTrain}/${date}/filter-cars-by-available-seats/${N}`);
   }
 }

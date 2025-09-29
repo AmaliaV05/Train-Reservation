@@ -1,8 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ApolloQueryResult } from '@apollo/client/core';
 import { Subscription } from 'rxjs';
+import { FeatureFlagService } from '../../core/feature-flag.service';
+import { FeatureFlags } from '../../core/feature-flags/feature-flags.enum';
+import { getISOStringWithoutTimezone } from '../../core/helpers/helpers';
 import { DataService } from '../data.service';
-import { CarType, CarWithSeatsViewModel, SeatViewModel, TrainWithCarsViewModel } from '../train.model';
+import { CarType } from '../enums';
+import { TrainQuery } from '../graphql/types/train-query';
+import { Train } from '../graphql/types/train-type';
+import { CarWithSeatsViewModel, SeatViewModel, TrainWithCarsViewModel } from '../train.model';
+import { TrainsGraphqlService } from '../trains-graphql.service';
 import { TrainsService } from '../trains.service';
 
 class SelectedSeatsView {
@@ -15,14 +23,14 @@ class SelectedSeatsView {
   templateUrl: './car-list.component.html'
 })
 export class CarListComponent implements OnInit, OnDestroy {
-  selectedTrain: TrainWithCarsViewModel = {
+  selectedTrain: TrainWithCarsViewModel | Train = {
     id: 0,
     name: '',
     cars: [{
       id: 0,
       carNumber: 0,
       numberOfSeats: 0,
-      type: CarType.All,
+      type: CarType.ALL,
       seats: [{
         id: 0,
         number: 0,
@@ -33,7 +41,7 @@ export class CarListComponent implements OnInit, OnDestroy {
     }]
   };
   idTrain: number;
-  selectedCarType = CarType.All;
+  selectedCarType = CarType.ALL;
   N = 1;
   selectedDate: Date;
   seats: number[];
@@ -47,6 +55,8 @@ export class CarListComponent implements OnInit, OnDestroy {
   seatsListSubscription: Subscription;
 
   constructor(private trainService: TrainsService,
+    private trainGraphqlService: TrainsGraphqlService,
+    private featureFlagService: FeatureFlagService,
     private route: ActivatedRoute,
     private router: Router,
     private dataService: DataService) { }
@@ -56,7 +66,7 @@ export class CarListComponent implements OnInit, OnDestroy {
       this.selectedDate = message);
     this.seatsListSubscription = this.dataService.currentSeatListMessage$.subscribe(message =>
       this.reserveSeatsIds = message);
-    this.idTrain = this.route.snapshot.params['id'];
+    this.idTrain = parseInt(this.route.snapshot.params['id']);
     this.getSelectedTrain();
   }
 
@@ -66,10 +76,20 @@ export class CarListComponent implements OnInit, OnDestroy {
   }
 
   getSelectedTrain() {
-    this.trainService.getTrainWithCars(this.idTrain, this.selectedDate, this.selectedCarType)
-      .subscribe((response: TrainWithCarsViewModel) => {
-        this.selectedTrain = response;
-      });
+    if (this.featureFlagService.isEnabled(FeatureFlags.UseGraphQL)) {
+      this.trainGraphqlService.getCarsByType(this.idTrain, this.selectedDate, this.selectedCarType)
+        .subscribe((response: ApolloQueryResult<TrainQuery>) => {
+          this.selectedTrain = response.data?.carsByType;
+        });
+    }
+    else {
+      let selectedDate = getISOStringWithoutTimezone(this.selectedDate);
+
+      this.trainService.getTrainWithCars(this.idTrain, selectedDate, this.selectedCarType)
+        .subscribe((response: TrainWithCarsViewModel) => {
+          this.selectedTrain = response;
+        });
+    }    
   }
 
   getFilteredCars(item: TrainWithCarsViewModel) {
@@ -94,7 +114,7 @@ export class CarListComponent implements OnInit, OnDestroy {
   }
 
   addSeat(car: CarWithSeatsViewModel, seat: SeatViewModel) {
-    if (this.selectedCarType != CarType.All && !this.reserveSeatsIds.includes(seat.id)) {
+    if (this.selectedCarType != CarType.ALL && !this.reserveSeatsIds.includes(seat.id)) {
       this.reserveSeatView.car = car.carNumber;
       this.reserveSeatView.seat = seat.number;
       this.reserveSeatsView.push(this.reserveSeatView);

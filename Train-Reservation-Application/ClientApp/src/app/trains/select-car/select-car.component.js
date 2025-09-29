@@ -11,15 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SelectCarComponent = void 0;
 var core_1 = require("@angular/core");
-var train_model_1 = require("../train.model");
+var feature_flags_enum_1 = require("../../core/feature-flags/feature-flags.enum");
+var feature_flag_service_1 = require("../../core/feature-flag.service");
+var helpers_1 = require("../../core/helpers/helpers");
+var enums_1 = require("../enums");
+var trains_graphql_service_1 = require("../trains-graphql.service");
 var trains_service_1 = require("../trains.service");
 var SelectCarComponent = /** @class */ (function () {
-    function SelectCarComponent(trainService) {
+    function SelectCarComponent(trainService, trainGraphqlService, featureFlagService) {
         this.trainService = trainService;
+        this.trainGraphqlService = trainGraphqlService;
+        this.featureFlagService = featureFlagService;
         this.carTypes = [
-            { value: train_model_1.CarType.FirstClass, text: 'First Class' },
-            { value: train_model_1.CarType.SecondClass, text: 'Second Class' },
-            { value: train_model_1.CarType.Sleeping, text: 'Sleeping' }
+            { value: enums_1.CarType.FIRST_CLASS, text: 'First Class' },
+            { value: enums_1.CarType.SECOND_CLASS, text: 'Second Class' },
+            { value: enums_1.CarType.SLEEPING, text: 'Sleeping' }
         ];
         this.filteredCarsByType = new core_1.EventEmitter();
         this.selectCarType = new core_1.EventEmitter();
@@ -27,12 +33,24 @@ var SelectCarComponent = /** @class */ (function () {
     SelectCarComponent.prototype.onChangeFilteredCars = function (option) {
         var _this = this;
         this.selectedCarType = option.value;
-        this.trainService.getTrainWithCars(this.idTrain, this.selectedDate, this.selectedCarType)
-            .subscribe(function (response) {
-            _this.filteredCars = response;
-            _this.filteredCarsByType.emit(_this.filteredCars);
-            _this.selectCarType.emit(_this.selectedCarType);
-        });
+        if (this.featureFlagService.isEnabled(feature_flags_enum_1.FeatureFlags.UseGraphQL)) {
+            this.trainGraphqlService.getCarsByType(this.idTrain, this.selectedDate, this.selectedCarType)
+                .subscribe(function (response) {
+                var _a;
+                _this.filteredCars = (_a = response.data) === null || _a === void 0 ? void 0 : _a.carsByType;
+                _this.filteredCarsByType.emit(_this.filteredCars);
+                _this.selectCarType.emit(_this.selectedCarType);
+            });
+        }
+        else {
+            var selectedDate = (0, helpers_1.getISOStringWithoutTimezone)(this.selectedDate);
+            this.trainService.getTrainWithCars(this.idTrain, selectedDate, this.selectedCarType)
+                .subscribe(function (response) {
+                _this.filteredCars = response;
+                _this.filteredCarsByType.emit(_this.filteredCars);
+                _this.selectCarType.emit(_this.selectedCarType);
+            });
+        }
     };
     __decorate([
         (0, core_1.Input)(),
@@ -55,7 +73,9 @@ var SelectCarComponent = /** @class */ (function () {
             selector: 'app-select-car',
             templateUrl: './select-car.component.html'
         }),
-        __metadata("design:paramtypes", [trains_service_1.TrainsService])
+        __metadata("design:paramtypes", [trains_service_1.TrainsService,
+            trains_graphql_service_1.TrainsGraphqlService,
+            feature_flag_service_1.FeatureFlagService])
     ], SelectCarComponent);
     return SelectCarComponent;
 }());

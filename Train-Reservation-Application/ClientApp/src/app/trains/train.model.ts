@@ -1,9 +1,4 @@
-export enum CarType {
-  All,
-  FirstClass,
-  SecondClass,
-  Sleeping
-}
+import { CarType } from "./enums";
 
 export interface TrainViewModel {
   id: number;

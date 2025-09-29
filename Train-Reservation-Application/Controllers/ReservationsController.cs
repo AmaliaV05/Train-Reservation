@@ -9,9 +9,9 @@ namespace Train_Reservation_Application.Controllers
     [ApiController]
     public class ReservationsController : ControllerBase
     {
-        private readonly IReservationsService _reservationService;
+        private readonly IRestReservationsService _reservationService;
 
-        public ReservationsController(IReservationsService reservationService)
+        public ReservationsController(IRestReservationsService reservationService)
         {
             _reservationService = reservationService;
         }

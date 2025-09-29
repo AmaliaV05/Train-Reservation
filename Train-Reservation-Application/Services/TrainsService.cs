@@ -1,66 +1,57 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Train_Reservation_Application.Data;
-using Train_Reservation_Application.Interfaces;
 using Train_Reservation_Application.Models;
-using Train_Reservation_Application.ViewModels.Trains;
 
 namespace Train_Reservation_Application.Services
 {
-    public class TrainsService : ITrainsService
+    public class TrainsService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
 
-        public TrainsService(ApplicationDbContext context, IMapper mapper)
+        public TrainsService(ApplicationDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<TrainViewModel>> FilterTrainsByDate(DateTime selectedDate)
+        public IQueryable<Train> GetTrainsByDate(DateTime selectedDate)
         {
-            return await _context.Trains
-                .Where(train => train.DayOfWeek == selectedDate.DayOfWeek)
-                .Select(train => _mapper.Map<TrainViewModel>(train))
-                .ToListAsync();
+            return _context.Trains
+                .Where(train => train.DayOfWeek == selectedDate.DayOfWeek);
         }
 
-        public async Task<TrainWithCarsViewModel> FilterCarsByType(int idTrain, DateTime selectedDate, CarType carType)
+        public IQueryable<Train> GetTrainsByDate(DayOfWeek selectedDay)
         {
-            if (carType == 0)
+            return _context.Trains
+                .Where(train => train.DayOfWeek == selectedDay);
+        }
+
+        public IQueryable<Train> GetCarsByType(int idTrain, DateTime date, CarType carType)
+        {
+            if (carType == CarType.All)
             {
-                var trainWithCarsViewModel = await _context.Trains
+                return _context.Trains
                  .OrderBy(train => train.Id)
-                 .Where(train => train.Id == idTrain)                 
+                 .Where(train => train.Id == idTrain)
                  .Include(train => train.Cars)
                  .ThenInclude(car => car.Seats)
-                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == selectedDate.Date))
-                 .AsSplitQuery()                 
-                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-                 .FirstOrDefaultAsync();
-
-                return trainWithCarsViewModel;
+                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == date.Date))
+                 .AsSplitQuery();
             }
 
-            var trainWithCarsViewModelFiltered = await _context.Trains
+            return _context.Trains
                  .OrderBy(train => train.Id)
                  .Where(train => train.Id == idTrain)
                  .Include(train => train.Cars.Where(car => car.Type == carType))
                  .ThenInclude(car => car.Seats)
-                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == selectedDate.Date))
-                 .AsSplitQuery()
-                 .Select(train => _mapper.Map<TrainWithCarsViewModel>(train))
-                 .FirstOrDefaultAsync();
-
-            return trainWithCarsViewModelFiltered;
+                 .ThenInclude(seat => seat.SeatCalendars.Where(sc => sc.Calendar.CalendarDate.Date == date.Date))
+                 .AsSplitQuery();
         }
 
-        public async Task<IEnumerable<int>> SeatsList(int idTrain, DateTime date, int N)
+        public async Task<List<int>> GetSeatListAsync(int idTrain, DateTime date, int N)
         {
             var train = await _context.Trains
                 .OrderBy(train => train.Id)
@@ -70,12 +61,12 @@ namespace Train_Reservation_Application.Services
                 .ThenInclude(seat => seat.Calendars.Where(calendar => calendar.CalendarDate.Date == date.Date))
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
-            var occupiedSeatsList = OccupiedSeatsList(train);
-            var availableSeatsList = AvailableSeatIdsList(occupiedSeatsList, N);
+            var occupiedSeatsList = GetOccupiedSeatList(train);
+            var availableSeatsList = GetAvailableSeatIdsList(occupiedSeatsList, N);
             return availableSeatsList;
         }
 
-        private static List<int> OccupiedSeatsList(Train train)
+        private static IReadOnlyList<int> GetOccupiedSeatList(Train train)
         {
             List<int> occupiedSeatsList = new();
 
@@ -106,10 +97,11 @@ namespace Train_Reservation_Application.Services
                     }
                 }
             }
+
             return occupiedSeatsList;
         }
 
-        private static List<int> AvailableSeatIdsList(List<int> occupiedSeatsList, int N)
+        private static List<int> GetAvailableSeatIdsList(IReadOnlyList<int> occupiedSeatsList, int N)
         {
             List<int> availableSeatsList = new();
             if (occupiedSeatsList.Count > 6)
@@ -125,11 +117,14 @@ namespace Train_Reservation_Application.Services
                     }
                 }
             }
-            else 
+            else
+            {
                 for (int t = occupiedSeatsList[2] + 1; t < occupiedSeatsList[5]; t++)
                 {
                     availableSeatsList.Add(t);
                 }
+            }
+
             return availableSeatsList;
         }
     }

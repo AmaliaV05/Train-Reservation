@@ -12,13 +12,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModifyReservationComponent = void 0;
 var core_1 = require("@angular/core");
 var forms_1 = require("@angular/forms");
+var feature_flag_service_1 = require("../../core/feature-flag.service");
+var feature_flags_enum_1 = require("../../core/feature-flags/feature-flags.enum");
 var data_service_1 = require("../../trains/data.service");
-var train_model_1 = require("../../trains/train.model");
+var enums_1 = require("../../trains/enums");
+var reservations_graphql_service_1 = require("../reservations-graphql.service");
 var reservations_service_1 = require("../reservations.service");
 var ModifyReservationComponent = /** @class */ (function () {
-    function ModifyReservationComponent(dataService, reservationsService) {
+    function ModifyReservationComponent(dataService, reservationsService, reservationsGraphqlService, featureFlagService) {
         this.dataService = dataService;
         this.reservationsService = reservationsService;
+        this.reservationsGraphqlService = reservationsGraphqlService;
+        this.featureFlagService = featureFlagService;
         this.modifiedReservation = {
             id: 0,
             code: '',
@@ -38,7 +43,7 @@ var ModifyReservationComponent = /** @class */ (function () {
                             car: {
                                 id: 0,
                                 carNumber: 0,
-                                type: train_model_1.CarType.All,
+                                type: enums_1.CarType.ALL,
                                 train: {
                                     id: 0,
                                     name: ''
@@ -53,7 +58,7 @@ var ModifyReservationComponent = /** @class */ (function () {
                 car: {
                     id: 0,
                     carNumber: 0,
-                    type: train_model_1.CarType.All,
+                    type: enums_1.CarType.ALL,
                     train: {
                         id: 0,
                         name: ''
@@ -87,12 +92,24 @@ var ModifyReservationComponent = /** @class */ (function () {
             reservationDate: this.selectedDate,
             reservedSeatsIds: this.reserveSeatsIds
         };
-        this.reservationsService.modifyReservation(this.reservationId, this.modifiedReservation)
-            .subscribe(function (response) {
-            _this.ticket = response.response;
-            _this.occupiedSeats = response.alternativeResponse;
-            _this.message = response.message;
-        });
+        if (this.featureFlagService.isEnabled(feature_flags_enum_1.FeatureFlags.UseGraphQL)) {
+            this.reservationsGraphqlService.modifyReservation(this.reservationId, this.reservationId, this.code.value, this.selectedDate, this.reserveSeatsIds)
+                .subscribe(function (response) {
+                var _a;
+                var result = (_a = response.data) === null || _a === void 0 ? void 0 : _a.updateReservation;
+                _this.ticket = result.response;
+                _this.occupiedSeats = result.alternativeResponse;
+                _this.message = result.message;
+            });
+        }
+        else {
+            this.reservationsService.modifyReservation(this.reservationId, this.modifiedReservation)
+                .subscribe(function (response) {
+                _this.ticket = response.response;
+                _this.occupiedSeats = response.alternativeResponse;
+                _this.message = response.message;
+            });
+        }
         this.reserveSeatsIds = [];
         this.modifyReservationForm.resetForm();
         this.showTicket = true;
@@ -107,7 +124,9 @@ var ModifyReservationComponent = /** @class */ (function () {
             templateUrl: './modify-reservation.component.html'
         }),
         __metadata("design:paramtypes", [data_service_1.DataService,
-            reservations_service_1.ReservationsService])
+            reservations_service_1.ReservationsService,
+            reservations_graphql_service_1.ReservationsGraphqlService,
+            feature_flag_service_1.FeatureFlagService])
     ], ModifyReservationComponent);
     return ModifyReservationComponent;
 }());

@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
@@ -25,6 +25,8 @@ import { MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 import { MomentUtcDateAdapter } from './trains/date-adapter.service';
 import { MultipleSeatsComponent } from './trains/multiple-seats/multiple-seats.component';
 import { ModifyReservationComponent } from './reservations/modify-reservation/modify-reservation.component';
+import { FeatureFlagService, getFlags } from './core/feature-flag.service';
+import { CoreModule } from './core/core.module';
 
 
 @NgModule({
@@ -54,6 +56,7 @@ import { ModifyReservationComponent } from './reservations/modify-reservation/mo
     MatNativeDateModule,
     MatCardModule,
     NgScrollbarModule,
+    CoreModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'train/:id/available-seats', component: CarListComponent },
@@ -69,6 +72,7 @@ import { ModifyReservationComponent } from './reservations/modify-reservation/mo
     { provide: MAT_DATE_LOCALE, useValue: 'en-GB' },
     { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },
     { provide: DateAdapter, useClass: MomentUtcDateAdapter },
+    { provide: APP_INITIALIZER, useFactory: getFlags, deps: [FeatureFlagService], multi: true },
   ],
   bootstrap: [AppComponent]
 })

@@ -1,8 +1,15 @@
 import { Component, ViewChild } from "@angular/core";
 import { FormControl, NgForm, Validators } from "@angular/forms";
+import { FetchResult } from "@apollo/client/core";
 import { Subscription } from "rxjs";
+import { FeatureFlagService } from "../../core/feature-flag.service";
+import { FeatureFlags } from "../../core/feature-flags/feature-flags.enum";
 import { DataService } from "../../trains/data.service";
-import { CarType } from "../../trains/train.model";
+import { CarType } from "../../trains/enums";
+import { Seat } from "../../trains/graphql/types/seat-type";
+import { Customer } from "../graphql/types/customer-type";
+import { ReservationMutation } from "../graphql/types/reservation-mutation";
+import { ReservationsGraphqlService } from "../reservations-graphql.service";
 import { ModifyReservationViewModel, ResponseService, SeatInCarViewModel, TicketViewModel } from "../reservations.model";
 import { ReservationsService } from "../reservations.service";
 
@@ -21,7 +28,7 @@ export class ModifyReservationComponent {
   selectedDate: Date;
   reserveSeatsIds = new Array<number>();
   reservationId: number;
-  ticket: TicketViewModel = {
+  ticket: TicketViewModel | Customer = {
     name: '',
     reservations: [{
       id: 0,
@@ -33,7 +40,7 @@ export class ModifyReservationComponent {
         car: {
           id: 0,
           carNumber: 0,
-          type: CarType.All,
+          type: CarType.ALL,
           train: {
             id: 0,
             name: ''
@@ -42,13 +49,13 @@ export class ModifyReservationComponent {
       }]
     }]
   };
-  occupiedSeats: SeatInCarViewModel[] = [{
+  occupiedSeats: SeatInCarViewModel[] | Seat[]= [{
     id: 0,
     number: 0,
     car: {
       id: 0,
       carNumber: 0,
-      type: CarType.All,
+      type: CarType.ALL,
       train: {
         id: 0,
         name: ''
@@ -64,7 +71,9 @@ export class ModifyReservationComponent {
   @ViewChild("modifyReservationForm") modifyReservationForm!: NgForm;
 
   constructor(private dataService: DataService,
-    private reservationsService: ReservationsService) { }
+    private reservationsService: ReservationsService,
+    private reservationsGraphqlService: ReservationsGraphqlService,
+    private featureFlagService: FeatureFlagService) { }
 
   ngOnInit() {
     this.subscription = this.dataService.currentMessage$.subscribe(message =>
@@ -88,12 +97,25 @@ export class ModifyReservationComponent {
       reservationDate: this.selectedDate,
       reservedSeatsIds: this.reserveSeatsIds
     };
-    this.reservationsService.modifyReservation(this.reservationId, this.modifiedReservation)
-      .subscribe((response: ResponseService<TicketViewModel, SeatInCarViewModel[], string>) => {
-        this.ticket = response.response;
-        this.occupiedSeats = response.alternativeResponse;
-        this.message = response.message;
-      });
+    if (this.featureFlagService.isEnabled(FeatureFlags.UseGraphQL)) {
+      this.reservationsGraphqlService.modifyReservation(this.reservationId, this.reservationId, this.code.value, this.selectedDate, this.reserveSeatsIds)
+        .subscribe((response: FetchResult<ReservationMutation>) => {
+          let result = response.data?.updateReservation;
+
+          this.ticket = result.response;
+          this.occupiedSeats = result.alternativeResponse;
+          this.message = result.message;
+        });
+    }
+    else {
+      this.reservationsService.modifyReservation(this.reservationId, this.modifiedReservation)
+        .subscribe((response: ResponseService<TicketViewModel, SeatInCarViewModel[], string>) => {
+          this.ticket = response.response;
+          this.occupiedSeats = response.alternativeResponse;
+          this.message = response.message;
+        });
+    }
+    
     this.reserveSeatsIds = [];
     this.modifyReservationForm.resetForm();
     this.showTicket = true;

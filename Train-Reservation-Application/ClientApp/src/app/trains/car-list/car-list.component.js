@@ -12,8 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarListComponent = void 0;
 var core_1 = require("@angular/core");
 var router_1 = require("@angular/router");
+var feature_flag_service_1 = require("../../core/feature-flag.service");
+var feature_flags_enum_1 = require("../../core/feature-flags/feature-flags.enum");
+var helpers_1 = require("../../core/helpers/helpers");
 var data_service_1 = require("../data.service");
-var train_model_1 = require("../train.model");
+var enums_1 = require("../enums");
+var trains_graphql_service_1 = require("../trains-graphql.service");
 var trains_service_1 = require("../trains.service");
 var SelectedSeatsView = /** @class */ (function () {
     function SelectedSeatsView() {
@@ -21,8 +25,10 @@ var SelectedSeatsView = /** @class */ (function () {
     return SelectedSeatsView;
 }());
 var CarListComponent = /** @class */ (function () {
-    function CarListComponent(trainService, route, router, dataService) {
+    function CarListComponent(trainService, trainGraphqlService, featureFlagService, route, router, dataService) {
         this.trainService = trainService;
+        this.trainGraphqlService = trainGraphqlService;
+        this.featureFlagService = featureFlagService;
         this.route = route;
         this.router = router;
         this.dataService = dataService;
@@ -33,7 +39,7 @@ var CarListComponent = /** @class */ (function () {
                     id: 0,
                     carNumber: 0,
                     numberOfSeats: 0,
-                    type: train_model_1.CarType.All,
+                    type: enums_1.CarType.ALL,
                     seats: [{
                             id: 0,
                             number: 0,
@@ -43,7 +49,7 @@ var CarListComponent = /** @class */ (function () {
                         }]
                 }]
         };
-        this.selectedCarType = train_model_1.CarType.All;
+        this.selectedCarType = enums_1.CarType.ALL;
         this.N = 1;
         this.reserveSeatsView = new Array();
         this.reserveSeatView = { car: 0, seat: 0 };
@@ -58,7 +64,7 @@ var CarListComponent = /** @class */ (function () {
         this.seatsListSubscription = this.dataService.currentSeatListMessage$.subscribe(function (message) {
             return _this.reserveSeatsIds = message;
         });
-        this.idTrain = this.route.snapshot.params['id'];
+        this.idTrain = parseInt(this.route.snapshot.params['id']);
         this.getSelectedTrain();
     };
     CarListComponent.prototype.ngOnDestroy = function () {
@@ -67,10 +73,20 @@ var CarListComponent = /** @class */ (function () {
     };
     CarListComponent.prototype.getSelectedTrain = function () {
         var _this = this;
-        this.trainService.getTrainWithCars(this.idTrain, this.selectedDate, this.selectedCarType)
-            .subscribe(function (response) {
-            _this.selectedTrain = response;
-        });
+        if (this.featureFlagService.isEnabled(feature_flags_enum_1.FeatureFlags.UseGraphQL)) {
+            this.trainGraphqlService.getCarsByType(this.idTrain, this.selectedDate, this.selectedCarType)
+                .subscribe(function (response) {
+                var _a;
+                _this.selectedTrain = (_a = response.data) === null || _a === void 0 ? void 0 : _a.carsByType;
+            });
+        }
+        else {
+            var selectedDate = (0, helpers_1.getISOStringWithoutTimezone)(this.selectedDate);
+            this.trainService.getTrainWithCars(this.idTrain, selectedDate, this.selectedCarType)
+                .subscribe(function (response) {
+                _this.selectedTrain = response;
+            });
+        }
     };
     CarListComponent.prototype.getFilteredCars = function (item) {
         this.selectedTrain = item;
@@ -89,7 +105,7 @@ var CarListComponent = /** @class */ (function () {
         return { 'background-color': this.seats.includes(id) ? '#00E828' : 'red' };
     };
     CarListComponent.prototype.addSeat = function (car, seat) {
-        if (this.selectedCarType != train_model_1.CarType.All && !this.reserveSeatsIds.includes(seat.id)) {
+        if (this.selectedCarType != enums_1.CarType.ALL && !this.reserveSeatsIds.includes(seat.id)) {
             this.reserveSeatView.car = car.carNumber;
             this.reserveSeatView.seat = seat.number;
             this.reserveSeatsView.push(this.reserveSeatView);
@@ -122,6 +138,8 @@ var CarListComponent = /** @class */ (function () {
             templateUrl: './car-list.component.html'
         }),
         __metadata("design:paramtypes", [trains_service_1.TrainsService,
+            trains_graphql_service_1.TrainsGraphqlService,
+            feature_flag_service_1.FeatureFlagService,
             router_1.ActivatedRoute,
             router_1.Router,
             data_service_1.DataService])

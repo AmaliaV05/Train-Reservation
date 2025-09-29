@@ -1,23 +1,24 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Train_Reservation_Application.Data;
+using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Reflection;
-using System.IO;
-using Train_Reservation_Application.Interfaces;
-using Train_Reservation_Application.Services;
-using Train_Reservation_Application.Middlewares;
+using Train_Reservation_Application.Data;
+using Train_Reservation_Application.Extensions;
 using Train_Reservation_Application.Helpers;
-using FluentValidation.AspNetCore;
-using FluentValidation;
-using Train_Reservation_Application.ViewModels.Reservations;
+using Train_Reservation_Application.Interfaces;
+using Train_Reservation_Application.Middlewares;
+using Train_Reservation_Application.Services;
 using Train_Reservation_Application.Validators;
+using Train_Reservation_Application.ViewModels.Reservations;
 
 namespace Train_Reservation_Application
 {
@@ -32,16 +33,23 @@ namespace Train_Reservation_Application
         
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddFeatureManagement();
+
+            if (Configuration.GetValue<bool>("FeatureManagement:UseGraphQL"))
+            {
+                services.AddGraphQLService(Configuration);
+            }
+
             services.AddAutoMapper(typeof(MappingProfile));
-            
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            
+                    Configuration.GetConnectionString("DefaultConnection")));            
+
             services.AddControllers()
                 .AddFluentValidation()
                 .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
-           
+            
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
@@ -67,14 +75,16 @@ namespace Train_Reservation_Application
                     }
                 });                
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
-            });
+            });            
 
-            services.AddScoped<ITrainsService, TrainsService>();
-            services.AddScoped<IReservationsService, ReservationsService>();
+            services.AddScoped<ReservationsService>();
+            services.AddScoped<TrainsService>();
+            services.AddScoped<IRestTrainsService, RestTrainsService>();
+            services.AddScoped<IRestReservationsService, RestReservationsService>();
             services.AddTransient<IValidator<NewReservationRequest>, NewReservationRequestValidator>();
-            services.AddTransient<IValidator<ModifyReservationViewModel>, ModifyReservationValidator>();
+            services.AddTransient<IValidator<ModifyReservationViewModel>, ModifyReservationValidator>();           
         }
 
        
@@ -107,9 +117,14 @@ namespace Train_Reservation_Application
 
             app.UseEndpoints(endpoints =>
             {
+                if (Configuration.GetValue<bool>("FeatureManagement:UseGraphQL"))
+                {
+                    endpoints.MapGraphQL();
+                }
+                    
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action=Index}/{id?}");                
             });
 
             app.UseSpa(spa =>

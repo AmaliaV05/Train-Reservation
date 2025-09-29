@@ -6,7 +6,7 @@ using Train_Reservation_Application.ViewModels.Trains;
 
 namespace Train_Reservation_Application.Interfaces
 {
-    public interface ITrainsService
+    public interface IRestTrainsService
     {
         Task<IEnumerable<TrainViewModel>> FilterTrainsByDate(DateTime selectedDate);
         Task<TrainWithCarsViewModel> FilterCarsByType(int idTrain, DateTime date, CarType carType);

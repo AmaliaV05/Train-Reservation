@@ -25,6 +25,9 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.6" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.3.6" />
+    <PackageReference Include="HotChocolate" Version="11.3.8" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="11.3.8" />
+    <PackageReference Include="HotChocolate.Data" Version="11.3.8" />
     <PackageReference Include="IdentityServer4.EntityFramework.Storage" Version="4.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.10" />
@@ -35,6 +38,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <PackageReference Include="Microsoft.FeatureManagement" Version="3.5.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -51,16 +55,55 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\app\core\config\feature-flags.enum.ts" />
+    <None Remove="ClientApp\src\app\core\core.module.ts" />
+    <None Remove="ClientApp\src\app\core\feature-flag.service.ts" />
+    <None Remove="ClientApp\src\app\core\helpers\helpers.ts" />
     <None Remove="ClientApp\src\app\home\data.service.ts" />
+    <None Remove="ClientApp\src\app\reservations\graphql\inputs.ts" />
+    <None Remove="ClientApp\src\app\reservations\graphql\mutations\update-reservation.mutation.ts" />
+    <None Remove="ClientApp\src\app\reservations\graphql\payloads.ts" />
+    <None Remove="ClientApp\src\app\reservations\graphql\reservation-type.ts" />
     <None Remove="ClientApp\src\app\reservations\modify-reservation\modify-reservation.component.ts" />
     <None Remove="ClientApp\src\app\reservations\reservation-finish\reservation-finish.component.ts" />
+    <None Remove="ClientApp\src\app\reservations\reservations-graphql.service.ts" />
     <None Remove="ClientApp\src\app\reservations\reservations.model.ts" />
     <None Remove="ClientApp\src\app\train-reservation.model.ts" />
     <None Remove="ClientApp\src\app\trains\car-list\car-list.component.ts" />
     <None Remove="ClientApp\src\app\trains\date-filter\date-filter.component.ts" />
+    <None Remove="ClientApp\src\app\trains\enums.ts" />
+    <None Remove="ClientApp\src\app\reservations\graphql\mutations\add-reservation.mutation.ts" />
+    <None Remove="ClientApp\src\app\trains\graphql\filters.ts" />
+    <None Remove="ClientApp\src\app\trains\graphql\queries\car-list.query.ts" />
+    <None Remove="ClientApp\src\app\trains\graphql\queries\date-filter.query.ts" />
+    <None Remove="ClientApp\src\app\trains\graphql\queries\seat-list.query.ts" />
+    <None Remove="ClientApp\src\app\trains\graphql\train-type.ts" />
     <None Remove="ClientApp\src\app\trains\multiple-seats\multiple-seats.component.ts" />
     <None Remove="ClientApp\src\app\trains\select-car\select-car.component.ts" />
     <None Remove="ClientApp\src\app\trains\select-seats\select-seats-number.component.ts" />
+    <None Remove="ClientApp\src\app\trains\trains-graphql.service.ts" />
+    <None Remove="ClientApp\src\app\core\config\api.config.ts" />
+    <None Remove="ClientApp\src\app\core\config\baseUrl.config.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\calendar-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\car-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\customer-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\reservation-seat-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\reservation-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\seat-calendar-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\seat-type.ts" />
+    <TypeScriptCompile Remove="ClientApp\src\app\trains\graphql\types\train-query.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Update="ClientApp\src\app\core\config\api.config.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="ClientApp\src\app\core\config\baseUrl.config.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

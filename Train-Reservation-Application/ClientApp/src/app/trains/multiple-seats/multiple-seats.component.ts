@@ -1,4 +1,11 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { MatSelectChange } from "@angular/material/select";
+import { ApolloQueryResult } from "@apollo/client/core";
+import { FeatureFlags } from "../../core/feature-flags/feature-flags.enum";
+import { FeatureFlagService } from "../../core/feature-flag.service";
+import { getISOStringWithoutTimezone } from "../../core/helpers/helpers";
+import { TrainQuery } from "../graphql/types/train-query";
+import { TrainsGraphqlService } from "../trains-graphql.service";
 import { TrainsService } from "../trains.service";
 
 interface SelectGroupSeats {
@@ -20,7 +27,9 @@ export class MultipleSeatsComponent {
   @Output() selectedGroupSeatsNumber = new EventEmitter<number>();
   @Output() selectedGroupSeatsList = new EventEmitter<number[]>();
 
-  constructor(private trainService: TrainsService) { }
+  constructor(private trainService: TrainsService,
+    private trainGraphqlService: TrainsGraphqlService,
+    private featureFlagService: FeatureFlagService) { }
 
   multipleSeats: SelectGroupSeats[] = [
     { value: 1, text: '1' },
@@ -32,13 +41,25 @@ export class MultipleSeatsComponent {
     { value: 7, text: '7' }
   ];
 
-  onChangeMultipleSeatsNumber(option) {
-    this.N = option.value;
-    this.trainService.getTrainWithMultipleAvailableSeats(this.idTrain, this.selectedDate, this.N)
-      .subscribe((response: number[]) => {
-        this.availableGroupSeatIds = response;
+  onChangeMultipleSeatsNumber(event: MatSelectChange) {
+    this.N = event.value as number;
+
+    if (this.featureFlagService.isEnabled(FeatureFlags.UseGraphQL)) {
+      this.trainGraphqlService.getSeatList(this.idTrain, this.selectedDate, this.N).subscribe((response: ApolloQueryResult<TrainQuery>) => {
+        this.availableGroupSeatIds = response.data?.seatList;
         this.selectedGroupSeatsNumber.emit(this.N);
         this.selectedGroupSeatsList.emit(this.availableGroupSeatIds);
       });
+    }
+    else {
+      let selectedDate = getISOStringWithoutTimezone(this.selectedDate);
+
+      this.trainService.getTrainWithMultipleAvailableSeats(this.idTrain, selectedDate, this.N)
+        .subscribe((response: number[]) => {
+          this.availableGroupSeatIds = response;
+          this.selectedGroupSeatsNumber.emit(this.N);
+          this.selectedGroupSeatsList.emit(this.availableGroupSeatIds);
+        });
+    }    
   }
 }

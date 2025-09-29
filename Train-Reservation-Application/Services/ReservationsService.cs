@@ -1,48 +1,42 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Train_Reservation_Application.Data;
 using Train_Reservation_Application.Exceptions;
-using Train_Reservation_Application.Interfaces;
 using Train_Reservation_Application.Models;
-using Train_Reservation_Application.ViewModels.Reservations;
-using Train_Reservation_Application.ViewModels.Reservations.Ticket;
 
 namespace Train_Reservation_Application.Services
 {
-    public class ReservationsService : IReservationsService
+    public class ReservationsService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
 
-        public ReservationsService(ApplicationDbContext context, IMapper mapper)
+        public ReservationsService(ApplicationDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<ResponseService<TicketViewModel, IEnumerable<SeatInCarViewModel>, string>> NewReservation(NewReservationRequest newReservationRequest)
+        public async Task<ReservationResponse> CreateReservationAsync(ReservationRequest reservationRequest)
         {
-            var response = new ResponseService<TicketViewModel, IEnumerable<SeatInCarViewModel>, string>();
-            var bookingCustomerSSN = newReservationRequest.SocialSecurityNumber;
-            var reservedSeatsIds = newReservationRequest.ReservationWithSeatsViewModel.ReservedSeatsIds;
-            var reservationDate = newReservationRequest.ReservationWithSeatsViewModel.ReservationDate;
+            var response = new ReservationResponse();
+            var bookingCustomerSSN = reservationRequest.SocialSecurityNumber;
+            var reservedSeatsIds = reservationRequest.ReservedSeatsIds;
+            var reservationDate = reservationRequest.ReservationDate;
             var checkSSN = await _context.Customers
                 .Where(customer => customer.SocialSecurityNumber == bookingCustomerSSN)
                 .FirstOrDefaultAsync();
-            var checkReservation = await CheckExistingReservation(bookingCustomerSSN, reservationDate, reservedSeatsIds);
+            var checkReservation = await CheckExistingReservationAsync(bookingCustomerSSN, reservationDate, reservedSeatsIds);
             if (checkReservation)
             {
-                response.Response = await GetTicket(bookingCustomerSSN, reservedSeatsIds, reservationDate);
+                response.Response = await GetTicketAsync(bookingCustomerSSN, reservedSeatsIds, reservationDate);
                 response.Message = "A reservation for this train already exists!";
                 return response;
-            }            
+            }
             else
             {
-                var checkOccupiedSeats = await AddSeatsToReservation(reservedSeatsIds, reservationDate);
+                var checkOccupiedSeats = await AddSeatsToReservationAsync(reservedSeatsIds, reservationDate);
                 if (checkOccupiedSeats.AlternativeResponse != null)
                 {
                     response.AlternativeResponse = checkOccupiedSeats.AlternativeResponse;
@@ -52,26 +46,93 @@ namespace Train_Reservation_Application.Services
                 if (checkSSN != null)
                 {
                     List<Seat> reservedSeats = checkOccupiedSeats.Response;
-                    await AddReservation(checkSSN, reservedSeats, reservationDate);
-                    response.Response = await GetTicket(bookingCustomerSSN,  reservedSeatsIds, reservationDate);
+                    await CreateReservationAsync(checkSSN, reservedSeats, reservationDate);
+                    response.Response = await GetTicketAsync(bookingCustomerSSN, reservedSeatsIds, reservationDate);
                     response.Message = checkOccupiedSeats.Message;
                     return response;
                 }
                 else
                 {
                     List<Seat> reservedSeats = checkOccupiedSeats.Response;
-                    Customer newCustomer = await AddCustomer(newReservationRequest);
-                    await AddReservation(newCustomer, reservedSeats, reservationDate);
-                    response.Response = await GetTicket(bookingCustomerSSN, reservedSeatsIds, reservationDate);
+                    Customer newCustomer = await CreateCustomerAsync(reservationRequest);
+                    await CreateReservationAsync(newCustomer, reservedSeats, reservationDate);
+                    response.Response = await GetTicketAsync(bookingCustomerSSN, reservedSeatsIds, reservationDate);
                     response.Message = "Customer registration completed & " + checkOccupiedSeats.Message;
                     return response;
                 }
-            }           
+            }
         }
 
-        private async Task<TicketViewModel> GetTicket(string socialSecurityNumber, List<int> reservedSeatsIds, DateTime reservationDate)
+        public async Task<ReservationResponse> UpdateReservationAsync(int idReservation, UpdateReservationRequest updateReservationRequest)
         {
-            int trainId = await FindTrainId(reservedSeatsIds);
+            var reservedSeatsIds = updateReservationRequest.ReservedSeatsIds;
+            var reservationDate = updateReservationRequest.ReservationDate;
+            var oldReservation = await _context.Reservations
+                 .Where(reservation => reservation.Id == idReservation)
+                 .OrderBy(reservation => reservation.Id)
+                 .Include(reservation => reservation.Customer)
+                 .Include(reservation => reservation.Seats)
+                 .ThenInclude(seat => seat.SeatCalendars)
+                 .AsSplitQuery()
+                 .FirstOrDefaultAsync();
+            if (oldReservation == null)
+            {
+                throw new IdNotFoundException(nameof(Reservation), idReservation);
+            }
+            if (idReservation != updateReservationRequest.Id)
+            {
+                throw new NoMatchException(idReservation, updateReservationRequest.Id, nameof(Reservation));
+            }
+            var response = new ReservationResponse();
+            if (oldReservation.Code != updateReservationRequest.Code)
+            {
+                response.Message = "Incorrect code";
+                return response;
+            }
+            var seats = CheckOccupiedSeats(reservedSeatsIds, reservationDate);
+            if (seats.Message == "occupied")
+            {
+                List<Seat> occupiedSeatsView = new();
+                foreach (var sid in seats.Response)
+                {
+                    var seatWithId = _context.Seats
+                        .Where(seat => seat.Id == sid.Id)
+                        .Include(seat => seat.Car)
+                        .ThenInclude(car => car.Train)
+                        .Include(seat => seat.SeatCalendars.Where(seat => seat.Calendar.CalendarDate.Date == reservationDate.Date))
+                        .FirstOrDefault();
+                    occupiedSeatsView.Add(seatWithId);
+                }
+                response.AlternativeResponse = occupiedSeatsView;
+                response.Message = "These seats have been previously reserved";
+                return response;
+            }
+            else
+            {
+                foreach (Seat seat in oldReservation.Seats)
+                {
+                    seat.SeatCalendars.First().SeatAvailability = false;
+                    _context.Entry(seat).State = EntityState.Modified;
+                }
+                oldReservation.Seats.Clear();
+                foreach (Seat seat in seats.Response)
+                {
+                    oldReservation.Seats.Add(seat);
+                    seat.SeatCalendars.First().SeatAvailability = true;
+                }
+                if (!await SaveChangesAsync())
+                {
+                    throw new DbUpdateConcurrencyException();
+                }
+                response.Response = await GetTicketAsync(oldReservation.Customer.SocialSecurityNumber, reservedSeatsIds, reservationDate);
+                response.Message = "Your reservation has been updated";
+                return response;
+            }
+        }
+
+        private async Task<Customer> GetTicketAsync(string socialSecurityNumber, List<int> reservedSeatsIds, DateTime reservationDate)
+        {
+            int trainId = await FindTrainIdAsync(reservedSeatsIds);
             return await _context.Customers
                 .Where(customer => customer.SocialSecurityNumber == socialSecurityNumber)
                 .OrderBy(customer => customer.Id)
@@ -80,11 +141,10 @@ namespace Train_Reservation_Application.Services
                 .ThenInclude(seat => seat.Car)
                 .ThenInclude(car => car.Train)
                 .AsSplitQuery()
-                .Select(t => _mapper.Map<TicketViewModel>(t))
                 .FirstOrDefaultAsync();
-        }        
+        }
 
-        private async Task<int> FindTrainId(List<int> reservedSeatsIds)
+        private async Task<int> FindTrainIdAsync(List<int> reservedSeatsIds)
         {
             var currentReservationFirstSeatId = reservedSeatsIds.First();
             var currentReservationSeat = await _context.Seats
@@ -97,9 +157,9 @@ namespace Train_Reservation_Application.Services
             return currentReservationSeat.Car.Train.Id;
         }
 
-        private async Task<ResponseService<List<Seat>, IEnumerable<SeatInCarViewModel>, string>> AddSeatsToReservation(List<int> reservedSeatsIds, DateTime reservationDate)
+        private async Task<ResponseService<List<Seat>, IEnumerable<Seat>, string>> AddSeatsToReservationAsync(List<int> reservedSeatsIds, DateTime reservationDate)
         {
-            var response = new ResponseService<List<Seat>, IEnumerable<SeatInCarViewModel>, string>();
+            var response = new ResponseService<List<Seat>, IEnumerable<Seat>, string>();
             var seats = CheckOccupiedSeats(reservedSeatsIds, reservationDate);
             if (seats.Message == "reserved")
             {
@@ -115,7 +175,7 @@ namespace Train_Reservation_Application.Services
             }
             else
             {
-                List<SeatInCarViewModel> occupiedSeatsView = new();
+                List<Seat> occupiedSeatsView = new();
                 foreach (var sid in seats.Response)
                 {
                     var seatWithId = _context.Seats
@@ -123,19 +183,18 @@ namespace Train_Reservation_Application.Services
                         .Include(seat => seat.Car)
                         .ThenInclude(car => car.Train)
                         .Include(seat => seat.SeatCalendars.Where(seat => seat.Calendar.CalendarDate.Date == reservationDate.Date))
-                        .Select(seat => _mapper.Map<SeatInCarViewModel>(seat))
                         .FirstOrDefault();
                     occupiedSeatsView.Add(seatWithId);
                 }
                 response.AlternativeResponse = occupiedSeatsView;
                 response.Message = "These seats have been previously reserved";
                 return response;
-            }           
+            }
         }
 
-        private async Task<bool> CheckExistingReservation(string socialSecurityNumber, DateTime reservationDate, List<int> reservedSeatsIds)
+        private async Task<bool> CheckExistingReservationAsync(string socialSecurityNumber, DateTime reservationDate, List<int> reservedSeatsIds)
         {
-            var currentReservationTrainId = await FindTrainId(reservedSeatsIds);
+            var currentReservationTrainId = await FindTrainIdAsync(reservedSeatsIds);
 
             var customer = await _context.Customers
                 .Where(customer => customer.SocialSecurityNumber == socialSecurityNumber)
@@ -189,20 +248,20 @@ namespace Train_Reservation_Application.Services
             }
         }
 
-        private async Task<Customer> AddCustomer(NewReservationRequest newReservationRequest)
+        private async Task<Customer> CreateCustomerAsync(ReservationRequest reservationRequest)
         {
             var newCustomer = new Customer
             {
-                SocialSecurityNumber = newReservationRequest.SocialSecurityNumber,
-                Name = newReservationRequest.Name,
-                Email = newReservationRequest.Email
+                SocialSecurityNumber = reservationRequest.SocialSecurityNumber,
+                Name = reservationRequest.Name,
+                Email = reservationRequest.Email
             };
             _context.Customers.Add(newCustomer);
             await SaveChangesAsync();
             return newCustomer;
         }
 
-        private async Task AddReservation(Customer customer, List<Seat> reservedSeats, DateTime reservationDate)
+        private async Task CreateReservationAsync(Customer customer, List<Seat> reservedSeats, DateTime reservationDate)
         {
             Random rd = new();
             var reservation = new Reservation
@@ -219,74 +278,6 @@ namespace Train_Reservation_Application.Services
         private async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<ResponseService<TicketViewModel, IEnumerable<SeatInCarViewModel>, string>> UpdateReservation(int idReservation, ModifyReservationViewModel modifyReservedSeats)
-        {
-            var reservedSeatsIds = modifyReservedSeats.ReservedSeatsIds;
-            var reservationDate = modifyReservedSeats.ReservationDate;
-            var oldReservation = await _context.Reservations
-                 .Where(reservation => reservation.Id == idReservation)
-                 .OrderBy(reservation => reservation.Id)
-                 .Include(reservation => reservation.Customer)
-                 .Include(reservation => reservation.Seats)
-                 .ThenInclude(seat => seat.SeatCalendars)
-                 .AsSplitQuery()
-                 .FirstOrDefaultAsync();
-            if (oldReservation == null)
-            {
-                throw new IdNotFoundException(nameof(Reservation), idReservation);
-            }
-            if (idReservation != modifyReservedSeats.Id)
-            {
-                throw new NoMatchException(idReservation, modifyReservedSeats.Id, nameof(Reservation));
-            }
-            var response = new ResponseService<TicketViewModel, IEnumerable<SeatInCarViewModel>, string>();
-            if (oldReservation.Code != modifyReservedSeats.Code)
-            {
-                response.Message = "Incorrect code";
-                return response;
-            }            
-            var seats = CheckOccupiedSeats(reservedSeatsIds, reservationDate);
-            if (seats.Message == "occupied")
-            {
-                List<SeatInCarViewModel> occupiedSeatsView = new();
-                foreach (var sid in seats.Response)
-                {
-                    var seatWithId = _context.Seats
-                        .Where(seat => seat.Id == sid.Id)
-                        .Include(seat => seat.Car)
-                        .ThenInclude(car => car.Train)
-                        .Include(seat => seat.SeatCalendars.Where(seat => seat.Calendar.CalendarDate.Date == reservationDate.Date))
-                        .Select(seat => _mapper.Map<SeatInCarViewModel>(seat))
-                        .FirstOrDefault();
-                    occupiedSeatsView.Add(seatWithId);
-                }
-                response.AlternativeResponse = occupiedSeatsView;
-                response.Message = "These seats have been previously reserved";
-                return response;
-            }
-            else
-            {
-                foreach (Seat seat in oldReservation.Seats)
-                {
-                    seat.SeatCalendars.First().SeatAvailability = false;
-                    _context.Entry(seat).State = EntityState.Modified;
-                }
-                oldReservation.Seats.Clear();
-                foreach (Seat seat in seats.Response)
-                {
-                    oldReservation.Seats.Add(seat);
-                    seat.SeatCalendars.First().SeatAvailability = true;
-                }
-                if (!await SaveChangesAsync())
-                {
-                    throw new DbUpdateConcurrencyException();
-                }
-                response.Response = await GetTicket(oldReservation.Customer.SocialSecurityNumber, reservedSeatsIds, reservationDate);
-                response.Message = "Your reservation has been updated";
-                return response;
-            }            
         }
     }
 }

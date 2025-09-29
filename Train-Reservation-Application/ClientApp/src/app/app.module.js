@@ -33,6 +33,8 @@ var material_moment_adapter_1 = require("@angular/material-moment-adapter");
 var date_adapter_service_1 = require("./trains/date-adapter.service");
 var multiple_seats_component_1 = require("./trains/multiple-seats/multiple-seats.component");
 var modify_reservation_component_1 = require("./reservations/modify-reservation/modify-reservation.component");
+var feature_flag_service_1 = require("./core/feature-flag.service");
+var core_module_1 = require("./core/core.module");
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -64,6 +66,7 @@ var AppModule = /** @class */ (function () {
                 core_2.MatNativeDateModule,
                 card_1.MatCardModule,
                 ngx_scrollbar_1.NgScrollbarModule,
+                core_module_1.CoreModule,
                 router_1.RouterModule.forRoot([
                     { path: '', component: home_component_1.HomeComponent, pathMatch: 'full' },
                     { path: 'train/:id/available-seats', component: car_list_component_1.CarListComponent },
@@ -79,6 +82,7 @@ var AppModule = /** @class */ (function () {
                 { provide: core_2.MAT_DATE_LOCALE, useValue: 'en-GB' },
                 { provide: core_2.MAT_DATE_FORMATS, useValue: material_moment_adapter_1.MAT_MOMENT_DATE_FORMATS },
                 { provide: core_2.DateAdapter, useClass: date_adapter_service_1.MomentUtcDateAdapter },
+                { provide: core_1.APP_INITIALIZER, useFactory: feature_flag_service_1.getFlags, deps: [feature_flag_service_1.FeatureFlagService], multi: true },
             ],
             bootstrap: [app_component_1.AppComponent]
         })

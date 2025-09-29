@@ -1,4 +1,5 @@
-import { CarType, TrainViewModel } from "../trains/train.model";
+import { CarType } from "../trains/enums";
+import { TrainViewModel } from "../trains/train.model";
 
 export class ResponseService<TResponse, TAlternativeResponse, TMessage>
 {

@@ -11,10 +11,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MultipleSeatsComponent = void 0;
 var core_1 = require("@angular/core");
+var feature_flags_enum_1 = require("../../core/feature-flags/feature-flags.enum");
+var feature_flag_service_1 = require("../../core/feature-flag.service");
+var helpers_1 = require("../../core/helpers/helpers");
+var trains_graphql_service_1 = require("../trains-graphql.service");
 var trains_service_1 = require("../trains.service");
 var MultipleSeatsComponent = /** @class */ (function () {
-    function MultipleSeatsComponent(trainService) {
+    function MultipleSeatsComponent(trainService, trainGraphqlService, featureFlagService) {
         this.trainService = trainService;
+        this.trainGraphqlService = trainGraphqlService;
+        this.featureFlagService = featureFlagService;
         this.selectedGroupSeatsNumber = new core_1.EventEmitter();
         this.selectedGroupSeatsList = new core_1.EventEmitter();
         this.multipleSeats = [
@@ -27,15 +33,26 @@ var MultipleSeatsComponent = /** @class */ (function () {
             { value: 7, text: '7' }
         ];
     }
-    MultipleSeatsComponent.prototype.onChangeMultipleSeatsNumber = function (option) {
+    MultipleSeatsComponent.prototype.onChangeMultipleSeatsNumber = function (event) {
         var _this = this;
-        this.N = option.value;
-        this.trainService.getTrainWithMultipleAvailableSeats(this.idTrain, this.selectedDate, this.N)
-            .subscribe(function (response) {
-            _this.availableGroupSeatIds = response;
-            _this.selectedGroupSeatsNumber.emit(_this.N);
-            _this.selectedGroupSeatsList.emit(_this.availableGroupSeatIds);
-        });
+        this.N = event.value;
+        if (this.featureFlagService.isEnabled(feature_flags_enum_1.FeatureFlags.UseGraphQL)) {
+            this.trainGraphqlService.getSeatList(this.idTrain, this.selectedDate, this.N).subscribe(function (response) {
+                var _a;
+                _this.availableGroupSeatIds = (_a = response.data) === null || _a === void 0 ? void 0 : _a.seatList;
+                _this.selectedGroupSeatsNumber.emit(_this.N);
+                _this.selectedGroupSeatsList.emit(_this.availableGroupSeatIds);
+            });
+        }
+        else {
+            var selectedDate = (0, helpers_1.getISOStringWithoutTimezone)(this.selectedDate);
+            this.trainService.getTrainWithMultipleAvailableSeats(this.idTrain, selectedDate, this.N)
+                .subscribe(function (response) {
+                _this.availableGroupSeatIds = response;
+                _this.selectedGroupSeatsNumber.emit(_this.N);
+                _this.selectedGroupSeatsList.emit(_this.availableGroupSeatIds);
+            });
+        }
     };
     __decorate([
         (0, core_1.Input)(),
@@ -58,7 +75,9 @@ var MultipleSeatsComponent = /** @class */ (function () {
             selector: 'app-multiple-seats',
             templateUrl: './multiple-seats.component.html'
         }),
-        __metadata("design:paramtypes", [trains_service_1.TrainsService])
+        __metadata("design:paramtypes", [trains_service_1.TrainsService,
+            trains_graphql_service_1.TrainsGraphqlService,
+            feature_flag_service_1.FeatureFlagService])
     ], MultipleSeatsComponent);
     return MultipleSeatsComponent;
 }());

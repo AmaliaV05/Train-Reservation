@@ -231,3 +231,7 @@ _Pvt_Extensions
 .fake/
 
 **/appsettings.Development.json
+
+# Data seeding migrations
+**/20250901071919_DataSeeding.cs
+**/20250901071919_DataSeeding.Designer.cs

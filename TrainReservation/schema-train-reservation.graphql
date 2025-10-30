@@ -1,0 +1,237 @@
+schema {
+  query: TrainQuery
+  mutation: ReservationMutation
+}
+
+"Payload returned after attempting to add a new reservation. Includes the customer information, any suggested alternative seats, and a result message."
+type AddReservationPayload {
+  "The customer for whom the reservation was created."
+  response: Customer
+  "Suggested alternative seats if the requested ones were not available."
+  alternativeResponse: [Seat]
+  "A message indicating the result of the reservation attempt."
+  message: String
+}
+
+"Represents a calendar where seats are assigned to specific dates."
+type Calendar {
+  "Unique identifier of the calendar."
+  id: Int
+  "A specific date within the calendar."
+  calendarDate: DateTime
+  "List of all seats associated with a specific date, regardless of their availability."
+  seats: [Seat]
+  "List of seats reserved or available for a specific date."
+  seatCalendars: [SeatCalendar]
+}
+
+"Represents a train car containing multiple seats."
+type Car {
+  "Unique identifier of the car."
+  id: Int
+  "Indicates the position of the car in the train."
+  carNumber: Int
+  "The total number of seats in the car."
+  numberOfSeats: Int
+  "The category of this train car, such as first class, second class, or sleeper."
+  type: CarType
+  "The train to which this car belongs."
+  train: Train
+  "The list of seats contained within this car."
+  seats: [Seat]
+}
+
+"Represents a customer who books train reservations."
+type Customer {
+  "The unique identifier of the customer."
+  id: Int
+  "The customer's Social Security Number (sensitive data)."
+  socialSecurityNumber: String
+  "The full name of the customer."
+  name: String
+  "The email address of the customer."
+  email: String
+  "The list of reservations made by the customer."
+  reservations: [Reservation]
+}
+
+"Represents a train reservation made by a customer, including one or more seats."
+type Reservation {
+  "The unique identifier of the reservation."
+  id: Int
+  "A unique code used when updating a reservation."
+  code: String
+  "The date and time when the reservation was made."
+  reservationDate: DateTime
+  "The list of seats included in this reservation."
+  seats: [Seat]
+  "The customer who made the reservation."
+  customer: Customer
+  "The join entity linking this reservation to specific seat assignments."
+  reservationSeats: ReservationSeat
+}
+
+type ReservationMutation {
+  "A customer adds a new reservation."
+  addReservation(input: AddReservationInput!): AddReservationPayload
+  "A customer modifies a reservation."
+  updateReservation(input: UpdateReservationInput!): UpdateReservationPayload
+}
+
+"Represents the association between a reservation and a seat."
+type ReservationSeat {
+  "The reservation associated with this seat."
+  reservation: Reservation
+  "The seat associated with this reservation."
+  seat: Seat
+}
+
+"Represents a seat within a train car, including its reservations and availability."
+type Seat {
+  "The unique identifier of the seat."
+  id: Int
+  "The seat number within the car."
+  number: Int
+  "The car to which this seat belongs."
+  car: Car
+  "The list of reservations associated with this seat."
+  reservations: [Reservation]
+  "The list of calendar entries relevant to this seat."
+  calendars: [Calendar]
+  "The list of seat-calendar availability mappings."
+  seatCalendars: [SeatCalendar]
+  "The list of reservation-seat mappings for this seat."
+  reservationSeats: [ReservationSeat]
+}
+
+"Represents the availability of a specific seat on a specific calendar date."
+type SeatCalendar {
+  "The seat associated with this calendar entry."
+  seat: Seat
+  "The calendar entry indicating a specific date."
+  calendar: Calendar
+  "Indicates whether the seat is available on the given calendar date."
+  seatAvailability: Boolean
+}
+
+"Represents a train, including its schedule and cars."
+type Train {
+  "The unique identifier of the train."
+  id: Int
+  "The name of the train."
+  name: String
+  "The day of the week the train operates."
+  dayOfWeek: DayOfWeek
+  "The list of cars that make up this train."
+  cars: [Car]
+}
+
+type TrainQuery {
+  "A customer views the train schedule for a chosen day."
+  trainsByDate(filter: DateFilterInput!): [Train]
+  "A customer can filter the cars by their type"
+  carsByType(filter: CarTypeFilterInput!): Train
+  "A customer can filter the cars by the number of available seats next to each other"
+  seatList(filter: SeatListFilterInput!): [Int]
+}
+
+"Payload returned after attempting to update a reservation. It contains the result of the update, alternative suggestions if applicable, and a status message."
+type UpdateReservationPayload {
+  "The updated customer data if the reservation update was successful."
+  response: Customer
+  "Suggested alternative seats if the requested ones were unavailable."
+  alternativeResponse: [Seat]
+  "A message describing the outcome of the reservation update."
+  message: String
+}
+
+"Input type for adding a new reservation."
+input AddReservationInput {
+  "The social security number of the customer."
+  socialSecurityNumber: String
+  "The full name of the customer."
+  name: String
+  "The email address of the customer."
+  email: String
+  "The date and time of the reservation."
+  reservationDate: DateTime
+  "The IDs of the seats the customer wants to reserve."
+  reservedSeatsIds: [Int]
+}
+
+"Input type for filtering cars by type."
+input CarTypeFilterInput {
+  "The ID of the car to filter."
+  id: Int
+  "The calendar date to apply the filter."
+  calendarDate: DateTime
+  "The type of car to filter by."
+  type: CarType
+}
+
+"Input type for filtering by date and day of the week."
+input DateFilterInput {
+  "The day of the week to filter by."
+  dayOfWeek: DayOfWeek
+}
+
+"Input type for filtering seat lists by car ID and date."
+input SeatListFilterInput {
+  "The ID of the seat to filter."
+  id: Int
+  "The calendar date to filter seat availability."
+  calendarDate: DateTime
+  "The number of seats to return."
+  n: Int
+}
+
+"Input type for updating reservation details."
+input UpdateReservationDetailsInput {
+  "The ID of the reservation to update."
+  id: Int
+  "The reservation code used as a security measure to update a reservation."
+  code: String
+  "The new date for the reservation."
+  reservationDate: DateTime
+  "The updated list of reserved seat IDs."
+  reservedSeatsIds: [Int]
+}
+
+"Input type for updating a reservation."
+input UpdateReservationInput {
+  "The ID of the reservation to update."
+  idReservation: Int
+  "The updated reservation details."
+  reservation: UpdateReservationDetailsInput
+}
+
+"The type of train car."
+enum CarType {
+  ALL
+  FIRST_CLASS
+  SECOND_CLASS
+  SLEEPING
+}
+
+"The days of the week."
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+"The `@defer` directive may be provided for fragment spreads and inline fragments to inform the executor to delay the execution of the current fragment to indicate deprioritization of the current fragment. A query with `@defer` directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred is delivered in a subsequent response. `@include` and `@skip` take precedence over `@defer`."
+directive @defer("If this argument label has a value other than null, it will be passed on to the result of this defer directive. This label is intended to give client applications a way to identify to which fragment a deferred result belongs to." label: String "Deferred when true." if: Boolean) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"The `@specifiedBy` directive is used within the type system definition language to provide a URL for specifying the behavior of custom scalar definitions."
+directive @specifiedBy("The specifiedBy URL points to a human-readable specification. This field will only read a result for scalar types." url: String!) on SCALAR
+
+"The `@stream` directive may be provided for a field of `List` type so that the backend can leverage technology such as asynchronous iterators to provide a partial list in the initial response, and additional list items in subsequent responses. `@include` and `@skip` take precedence over `@stream`."
+directive @stream("If this argument label has a value other than null, it will be passed on to the result of this stream directive. This label is intended to give client applications a way to identify to which fragment a streamed result belongs to." label: String "The initial elements that shall be send down to the consumer." initialCount: Int! "Streamed when true." if: Boolean!) on FIELD
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime @specifiedBy(url: "https:\/\/www.graphql-scalars.com\/date-time")
